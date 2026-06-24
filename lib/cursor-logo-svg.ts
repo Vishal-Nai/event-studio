@@ -32,7 +32,3 @@ export function cursorLogoSvg(
 
   return `<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${scale.toFixed(6)})" fill="${color}" opacity="${opacity}">${LOGO_PATHS.map((d) => `<path d="${d}"/>`).join("")}</g>`;
 }
-
-export function cursorLogoWidth(height: number): number {
-  return LOGO_VIEWBOX.width * (height / LOGO_VIEWBOX.height);
-}

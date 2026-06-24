@@ -85,31 +85,3 @@ export const FRAME_STYLE_IDS = [
 ] as const;
 
 export type FrameStyleId = typeof FRAME_STYLE_IDS[number];
-
-export interface FrameStyle {
-  id: FrameStyleId;
-  name: string;
-  description: string;
-}
-
-export const FRAME_STYLES: FrameStyle[] = [
-  { id: "hackathon-1", name: "Hackathon Build", description: "Fixed Cursor hackathon frame." },
-  { id: "hackathon-2", name: "Hackathon Code", description: "Fixed Cursor hackathon frame." },
-  { id: "hackathon-3", name: "Hackathon Impact", description: "Fixed Cursor hackathon frame." },
-  { id: "hackathon-4", name: "Hackathon Ship", description: "Fixed Cursor hackathon frame." },
-  { id: "hackathon-5", name: "Hackathon Start", description: "Fixed Cursor hackathon frame." },
-  { id: "meetup-1", name: "Meetup Connect", description: "Fixed Cursor meetup frame." },
-  { id: "meetup-2", name: "Meetup Projects", description: "Fixed Cursor meetup frame." },
-  { id: "meetup-3", name: "Meetup Grow", description: "Fixed Cursor meetup frame." },
-  { id: "meetup-4", name: "Meetup Ideas", description: "Fixed Cursor meetup frame." },
-  { id: "meetup-5", name: "Meetup Future", description: "Fixed Cursor meetup frame." },
-  { id: "cafe-1", name: "Cafe Community", description: "Fixed Cafe Cursor frame." },
-  { id: "cafe-2", name: "Cafe Conversations", description: "Fixed Cafe Cursor frame." },
-  { id: "cafe-3", name: "Cafe Ship Code", description: "Fixed Cafe Cursor frame." },
-  { id: "cafe-4", name: "Cafe Builders", description: "Fixed Cafe Cursor frame." },
-  { id: "cafe-5", name: "Cafe Connections", description: "Fixed Cafe Cursor frame." },
-  { id: "announcement-1", name: "Announcement Text", description: "Centered Cursor announcement frame." },
-  { id: "announcement-4", name: "Announcement Photo", description: "Photo-led Cursor announcement frame." },
-  { id: "thank-you-1", name: "Thank You Classic", description: "Fixed Cursor thank-you frame." },
-  { id: "thank-you-2", name: "Thank You Centered", description: "Centered Cursor thank-you frame." },
-];

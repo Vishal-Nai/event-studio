@@ -1,6 +1,5 @@
 import { BrandingConfig, DEFAULT_BRANDING, Frame, FrameStyleId, PhotoArea } from "@/types";
 import { cursorLogoSvg } from "@/lib/cursor-logo-svg";
-export type { AspectRatio } from "@/types";
 
 const W = 1920;
 const H = 1080;
@@ -476,7 +475,6 @@ function contentSubtitle(b: BrandingConfig, fallback: string): string {
 
 function resolveTextLayout(t: FrameTemplate, title: string): ResolvedTextLayout {
   const isTextOnly = !t.slot;
-  const isAnnouncement = t.eventKind === "announcement";
   const isBracket = t.layout === "bracket";
   const staticLayout = TEXT_LAYOUTS[t.id];
 
@@ -703,23 +701,6 @@ function renderTemplate(t: FrameTemplate, b: BrandingConfig): string {
 </svg>`);
 }
 
-type FrameGenerator = (b: BrandingConfig) => string;
-
-const GENERATORS = Object.fromEntries(
-  TEMPLATES.map((template) => [template.id, (branding: BrandingConfig) => renderTemplate(template, branding)])
-) as Record<FrameStyleId, FrameGenerator>;
-
-export function getFramePhotoArea(styleId: FrameStyleId): PhotoArea | null {
-  return PHOTO_AREAS[styleId];
-}
-
-export function generateFrameImage(
-  styleId: FrameStyleId,
-  branding: BrandingConfig
-): string {
-  return GENERATORS[styleId](branding);
-}
-
 export function buildPresetFrames(
   branding: BrandingConfig = DEFAULT_BRANDING
 ): Frame[] {
@@ -738,10 +719,3 @@ export function buildPresetFrames(
     photoArea: template.slot,
   }));
 }
-
-export const FRAME_COLORS = [
-  "#050505", "#09090c", "#111111",
-  "#1a1a24", "#242424", "#2a1f44",
-  "#4d9ef6", "#a78bfa", "#2563eb",
-  "#7c3aed", "#059669", "#e11d48",
-];

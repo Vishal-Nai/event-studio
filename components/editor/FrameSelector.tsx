@@ -21,7 +21,7 @@ interface FrameSelectorProps {
   previewPhotoSrc?: string | null;
 }
 
-export function FrameSelectorInner({
+function FrameSelectorInner({
   frames,
   selectedFrameId,
   onSelectFrame,
