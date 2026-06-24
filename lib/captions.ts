@@ -5,14 +5,6 @@ function cleanEventName(value: string): string {
   return eventName || DEFAULT_BRANDING.eventName;
 }
 
-function parseHashtags(value?: string): string[] {
-  const tags = (value || DEFAULT_BRANDING.hashtags || "")
-    .split(/[,\s]+/)
-    .map((tag) => tag.trim().replace(/^#/, ""))
-    .filter(Boolean);
-  return Array.from(new Set(tags)).slice(0, 8);
-}
-
 function eventType(eventName: string): string {
   const lower = eventName.toLowerCase();
   if (lower.includes("hackathon")) return "hackathon";
@@ -23,32 +15,28 @@ function eventType(eventName: string): string {
   return "event";
 }
 
-export function generateCaptions(details: Pick<BrandingConfig, "eventName" | "tagline" | "date" | "location" | "hashtags">): Caption[] {
+export function generateCaptions(details: Pick<BrandingConfig, "eventName" | "tagline">): Caption[] {
   const eventName = cleanEventName(details.eventName);
   const tagline = details.tagline?.trim();
-  const location = details.location?.trim() || "India";
-  const date = details.date?.trim();
   const type = eventType(eventName);
-  const whenWhere = [date, location].filter(Boolean).join(" · ");
-  const hashtags = parseHashtags(details.hashtags);
 
   return [
     {
-      text: `Excited to be part of ${eventName}${whenWhere ? ` (${whenWhere})` : ""}. ${tagline || "Building, learning, and connecting with the Cursor community."}`,
-      hashtags,
+      text: `Excited to be part of ${eventName}. ${tagline || "Building, learning, and connecting with the Cursor community."}`,
+      hashtags: [],
     },
     {
-      text: `${eventName} brought builders, ideas, and AI-powered workflows together${location ? ` in ${location}` : ""}. Grateful for the energy, conversations, and community.`,
-      hashtags,
+      text: `${eventName} brought builders, ideas, and AI-powered workflows together. Grateful for the energy, conversations, and community.`,
+      hashtags: [],
     },
     {
       text: `A memorable ${type} with the Cursor community. ${tagline || "Great conversations, practical demos, and lots of inspiration to keep building."}`,
-      hashtags,
+      hashtags: [],
     },
   ];
 }
 
 export function formatCaptionForShare(caption: Caption): string {
   const hashtagString = caption.hashtags.map((t) => `#${t}`).join(" ");
-  return `${caption.text}\n\n${hashtagString}`;
+  return hashtagString ? `${caption.text}\n\n${hashtagString}` : caption.text;
 }

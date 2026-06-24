@@ -36,11 +36,6 @@ export interface PhotoArea {
   height: number;
 }
 
-export interface BrandingPosition {
-  x: number;
-  y: number;
-}
-
 export const ASPECT_RATIO_DIMENSIONS: Record<AspectRatio, { width: number; height: number }> = {
   "1:1": { width: 1080, height: 1080 },
   "4:5": { width: 1080, height: 1350 },
@@ -53,14 +48,8 @@ export interface BrandingConfig {
   eventName: string;
   tagline: string;
   logoText: string;
-  brandingPosition?: BrandingPosition;
-  date: string;
-  location: string;
   accentColor: string;
   secondaryColor: string;
-  website: string;
-  statusText?: string;
-  hashtags?: string;
   backgroundStyle?: "city" | "grid" | "minimal" | "code";
 }
 
@@ -68,13 +57,8 @@ export const DEFAULT_BRANDING: BrandingConfig = {
   eventName: "Cursor India",
   tagline: "AI coding agent for building ambitious software",
   logoText: "Cursor",
-  date: "July 2026",
-  location: "India",
   accentColor: "#050505",
   secondaryColor: "#7c3aed",
-  website: "cursor.com",
-  statusText: "Cursor India",
-  hashtags: "#CursorIndia, #CursorAI, #DevCommunity, #BuildWithCursor, #AICoding",
   backgroundStyle: "city",
 };
 
@@ -95,15 +79,9 @@ export const FRAME_STYLE_IDS = [
   "cafe-4",
   "cafe-5",
   "announcement-1",
-  "announcement-2",
-  "announcement-3",
   "announcement-4",
-  "announcement-5",
   "thank-you-1",
   "thank-you-2",
-  "thank-you-3",
-  "thank-you-4",
-  "thank-you-5",
 ] as const;
 
 export type FrameStyleId = typeof FRAME_STYLE_IDS[number];
@@ -130,14 +108,8 @@ export const FRAME_STYLES: FrameStyle[] = [
   { id: "cafe-3", name: "Cafe Ship Code", description: "Fixed Cafe Cursor frame." },
   { id: "cafe-4", name: "Cafe Builders", description: "Fixed Cafe Cursor frame." },
   { id: "cafe-5", name: "Cafe Connections", description: "Fixed Cafe Cursor frame." },
-  { id: "announcement-1", name: "Announcement Big", description: "Fixed Cursor announcement frame." },
-  { id: "announcement-2", name: "Announcement Soon", description: "Fixed Cursor announcement frame." },
-  { id: "announcement-3", name: "Announcement New", description: "Fixed Cursor announcement frame." },
-  { id: "announcement-4", name: "Announcement Ready", description: "Fixed Cursor announcement frame." },
-  { id: "announcement-5", name: "Announcement Details", description: "Fixed Cursor announcement frame." },
-  { id: "thank-you-1", name: "Thank You Heart", description: "Fixed Cursor thank-you frame." },
-  { id: "thank-you-2", name: "Thank You Waves", description: "Fixed Cursor thank-you frame." },
-  { id: "thank-you-3", name: "Thank You Memorable", description: "Fixed Cursor thank-you frame." },
-  { id: "thank-you-4", name: "Thank You Next", description: "Fixed Cursor thank-you frame." },
-  { id: "thank-you-5", name: "Thank You Community", description: "Fixed Cursor thank-you frame." },
+  { id: "announcement-1", name: "Announcement Text", description: "Centered Cursor announcement frame." },
+  { id: "announcement-4", name: "Announcement Photo", description: "Photo-led Cursor announcement frame." },
+  { id: "thank-you-1", name: "Thank You Classic", description: "Fixed Cursor thank-you frame." },
+  { id: "thank-you-2", name: "Thank You Centered", description: "Centered Cursor thank-you frame." },
 ];

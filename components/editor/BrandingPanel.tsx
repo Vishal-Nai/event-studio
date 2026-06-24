@@ -7,7 +7,6 @@ import { BrandingConfig } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface BrandingPanelProps {
@@ -56,17 +55,13 @@ export function BrandingPanel({ config, onChange, onReset }: BrandingPanelProps)
   }, [onChange]);
 
   const textFields: Array<{
-    id: "eventName" | "tagline" | "hashtags" | "location" | "date" | "website";
+    id: "eventName" | "tagline";
     label: string;
     placeholder: string;
     hint?: string;
   }> = [
-    { id: "eventName", label: "Event name", placeholder: "Cursor India", hint: "Updates the text on supported styles" },
-    { id: "tagline", label: "Short line", placeholder: "AI coding agent for building ambitious software" },
-    { id: "hashtags", label: "Hashtags", placeholder: "#CursorIndia, #BuildWithCursor", hint: "Comma-separated, shown on supported styles" },
-    { id: "location", label: "Location", placeholder: "India" },
-    { id: "date", label: "Date", placeholder: "July 2026" },
-    { id: "website", label: "Website", placeholder: "cursor.com" },
+    { id: "eventName", label: "Event name", placeholder: "Cursor India", hint: "Drag the title on the preview to reposition it." },
+    { id: "tagline", label: "Subtitle", placeholder: "AI coding agent for building ambitious software", hint: "Drag the subtitle on the preview to reposition it." },
   ];
 
   const field = (id: typeof textFields[number]["id"], label: string, placeholder: string, hint?: string) => (
@@ -112,45 +107,11 @@ export function BrandingPanel({ config, onChange, onReset }: BrandingPanelProps)
             className="overflow-hidden"
           >
             <div className="space-y-3 pt-2">
-              {textFields.slice(0, 2).map((f) => (
+              {textFields.map((f) => (
                 <Fragment key={f.id}>
                   {field(f.id, f.label, f.placeholder, f.hint)}
                 </Fragment>
               ))}
-
-              {/* Status quick-select */}
-              <div className="space-y-1.5">
-                <Label className="text-white/60 text-xs font-medium">Status</Label>
-                <div className="flex flex-wrap gap-1">
-                  {["Hackathon", "Meetup", "Cafe Cursor", "Announcement", "Thank You!"].map((s) => (
-                    <button key={s} type="button"
-                      onClick={() => { setDraft(p => ({ ...p, statusText: s })); onChange({ statusText: s }); }}
-                      className={cn(
-                        "rounded-md border px-2 py-1 text-[10px] transition-colors leading-none",
-                        (draft.statusText ?? "") === s
-                          ? "border-violet-400/60 bg-violet-500/15 text-violet-300"
-                          : "border-white/10 text-white/35 hover:border-white/25 hover:text-white/60"
-                      )}
-                    >{s}</button>
-                  ))}
-                </div>
-                <Input
-                  id="statusText"
-                  value={draft.statusText ?? ""}
-                  onChange={(e) => handleTextChange("statusText", e.target.value)}
-                  placeholder="or type a custom status…"
-                  className="h-7 text-xs glass border-white/10 bg-transparent text-white placeholder:text-white/20 focus-visible:ring-violet-500/40"
-                />
-              </div>
-
-              {field("hashtags", "Hashtags", "#CursorIndia, #BuildWithCursor", "Comma-separated, shown on supported styles")}
-
-              <div className="grid grid-cols-2 gap-2">
-                {field("location", "Location", "India")}
-                {field("date", "Date", "July 2026")}
-              </div>
-
-              {field("website", "Website", "cursor.com")}
 
               <Separator className="bg-white/[0.06]" />
 

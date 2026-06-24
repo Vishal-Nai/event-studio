@@ -11,6 +11,7 @@ import { useFrames } from "@/hooks/useFrames";
 import { useBranding } from "@/hooks/useBranding";
 import {
   drawComposite,
+  getPortraitFocusOffset,
   loadImage,
   toCanvasArea,
   exportCanvas,
@@ -166,7 +167,7 @@ function EditorContent() {
           const scale = area.width / img.naturalWidth;
           updateTransform({
             x: 0,
-            y: img.naturalHeight * scale * 0.13,
+            y: getPortraitFocusOffset(img.naturalHeight, scale, area.height),
             scale,
           });
         } else {

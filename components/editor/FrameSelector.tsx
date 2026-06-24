@@ -4,7 +4,13 @@ import { memo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, CheckCircle2 } from "lucide-react";
 import { Frame } from "@/types";
-import { drawComposite, getCanvasDisplaySize, loadImage, toCanvasArea } from "@/lib/canvas";
+import {
+  drawComposite,
+  getCanvasDisplaySize,
+  getPortraitFocusOffset,
+  loadImage,
+  toCanvasArea,
+} from "@/lib/canvas";
 import { cn } from "@/lib/utils";
 
 interface FrameSelectorProps {
@@ -53,7 +59,12 @@ export function FrameSelectorInner({
             drawComposite(canvas, {
               photo,
               frame: frameImage,
-              transform: { x: 0, y: isPortrait ? photo.naturalHeight * scale * 0.13 : 0, scale, rotation: 0 },
+              transform: {
+                x: 0,
+                y: isPortrait ? getPortraitFocusOffset(photo.naturalHeight, scale, area.height) : 0,
+                scale,
+                rotation: 0,
+              },
               canvasWidth: canvas.width,
               canvasHeight: canvas.height,
               aspectRatio: frame.aspectRatio,

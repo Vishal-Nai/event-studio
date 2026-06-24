@@ -190,11 +190,11 @@ export function PhotoCanvas({
 
       </div>
 
-      {photoSrc && !photoDisabled && (
+      {photoSrc && !photoDisabled ? (
         <p className="text-xs text-white/25">
           Drag photo to move it inside the fixed frame
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

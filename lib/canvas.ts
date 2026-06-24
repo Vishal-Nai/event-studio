@@ -43,6 +43,13 @@ export function toCanvasArea(area: PhotoArea | null | undefined, aspectRatio: As
   };
 }
 
+export function getPortraitFocusOffset(photoHeight: number, scale: number, areaHeight: number): number {
+  const renderedHeight = photoHeight * scale;
+  const maxSafeOffset = Math.max(0, (renderedHeight - areaHeight) / 2);
+  const preferredOffset = Math.min(areaHeight * 0.055, renderedHeight * 0.045);
+  return Math.min(preferredOffset, maxSafeOffset * 0.7);
+}
+
 /**
  * Draw photo + frame overlay on a canvas.
  * Transforms are expressed in CANVAS_DISPLAY coordinate space.

@@ -8,6 +8,7 @@ const H = 1080;
 type EventKind = "hackathon" | "meetup" | "cafe" | "announcement" | "thank-you";
 type LayoutKind = "hero" | "wide" | "angled" | "bracket" | "minimal";
 type DecorKind = "grid" | "cube" | "waves" | "dots" | "city" | "chat" | "coffee" | "megaphone" | "spark" | "heart" | "minimal";
+type TextAnchor = "start" | "middle" | "end";
 
 interface FrameTemplate {
   id: FrameStyleId;
@@ -17,38 +18,142 @@ interface FrameTemplate {
   decor: DecorKind;
   title: string;
   subtitle: string;
-  status?: string;
   slot: PhotoArea | null;
   tags: string[];
   description: string;
 }
 
+interface StaticTextLayer {
+  x: number;
+  y: number;
+  maxWidth: number;
+  anchor: TextAnchor;
+  maxLines?: number;
+}
+
+interface ResolvedTextLayer {
+  x: number;
+  y: number;
+  maxWidth: number;
+  fontSize: number;
+  anchor: TextAnchor;
+  maxLines: number;
+}
+
+interface ResolvedTextLayout {
+  title: ResolvedTextLayer;
+  subtitle: ResolvedTextLayer;
+}
+
+const FONT_FAMILY = "'Geist','Inter',Arial,sans-serif";
+const TITLE_FONT_SIZE = 58;
+const SUBTITLE_FONT_SIZE = 24;
+const TEXT_ONLY_TITLE_FONT_SIZE = TITLE_FONT_SIZE;
+const TITLE_WEIGHT = 830;
+const SUBTITLE_WEIGHT = 520;
+const LOGO_X = 78;
+const LOGO_Y = 58;
+const LOGO_HEIGHT = 38;
+
+const TEXT_LAYOUTS: Record<FrameStyleId, { title: StaticTextLayer; subtitle?: StaticTextLayer }> = {
+  "hackathon-1": {
+    title: { x: 98, y: 232, maxWidth: 360, anchor: "start", maxLines: 3 },
+    subtitle: { x: 98, y: 360, maxWidth: 340, anchor: "start" },
+  },
+  "hackathon-2": {
+    title: { x: 98, y: 180, maxWidth: 800, anchor: "start" },
+    subtitle: { x: 98, y: 316, maxWidth: 760, anchor: "start" },
+  },
+  "hackathon-3": {
+    title: { x: W / 2, y: 180, maxWidth: 920, anchor: "middle" },
+    subtitle: { x: W / 2, y: 316, maxWidth: 760, anchor: "middle" },
+  },
+  "hackathon-4": {
+    title: { x: W / 2, y: 210, maxWidth: 900, anchor: "middle" },
+    subtitle: { x: W / 2, y: 295, maxWidth: 560, anchor: "middle" },
+  },
+  "hackathon-5": {
+    title: { x: 1760, y: 180, maxWidth: 720, anchor: "end" },
+    subtitle: { x: 1760, y: 316, maxWidth: 620, anchor: "end" },
+  },
+  "meetup-1": {
+    title: { x: 98, y: 180, maxWidth: 820, anchor: "start" },
+    subtitle: { x: 98, y: 316, maxWidth: 760, anchor: "start" },
+  },
+  "meetup-2": {
+    title: { x: W / 2, y: 180, maxWidth: 920, anchor: "middle" },
+    subtitle: { x: W / 2, y: 316, maxWidth: 800, anchor: "middle" },
+  },
+  "meetup-3": {
+    title: { x: 1760, y: 180, maxWidth: 720, anchor: "end" },
+    subtitle: { x: 1760, y: 316, maxWidth: 620, anchor: "end" },
+  },
+  "meetup-4": {
+    title: { x: 520, y: 180, maxWidth: 900, anchor: "start" },
+    subtitle: { x: 520, y: 316, maxWidth: 780, anchor: "start" },
+  },
+  "meetup-5": {
+    title: { x: W / 2, y: 180, maxWidth: 920, anchor: "middle" },
+    subtitle: { x: W / 2, y: 316, maxWidth: 800, anchor: "middle" },
+  },
+  "cafe-1": {
+    title: { x: 98, y: 232, maxWidth: 360, anchor: "start", maxLines: 3 },
+    subtitle: { x: 98, y: 360, maxWidth: 340, anchor: "start" },
+  },
+  "cafe-2": {
+    title: { x: 98, y: 180, maxWidth: 820, anchor: "start" },
+    subtitle: { x: 98, y: 316, maxWidth: 760, anchor: "start" },
+  },
+  "cafe-3": {
+    title: { x: W / 2, y: 180, maxWidth: 920, anchor: "middle" },
+    subtitle: { x: W / 2, y: 316, maxWidth: 760, anchor: "middle" },
+  },
+  "cafe-4": {
+    title: { x: 1760, y: 180, maxWidth: 720, anchor: "end" },
+    subtitle: { x: 1760, y: 316, maxWidth: 620, anchor: "end" },
+  },
+  "cafe-5": {
+    title: { x: 98, y: 232, maxWidth: 360, anchor: "start", maxLines: 3 },
+    subtitle: { x: 98, y: 360, maxWidth: 340, anchor: "start" },
+  },
+  "announcement-1": {
+    title: { x: W / 2, y: 390, maxWidth: 1100, anchor: "middle" },
+    subtitle: { x: W / 2, y: 520, maxWidth: 820, anchor: "middle" },
+  },
+  "announcement-4": {
+    title: { x: W / 2, y: 180, maxWidth: 980, anchor: "middle" },
+    subtitle: { x: W / 2, y: 316, maxWidth: 820, anchor: "middle" },
+  },
+  "thank-you-1": {
+    title: { x: W / 2, y: 390, maxWidth: 1040, anchor: "middle" },
+    subtitle: { x: W / 2, y: 520, maxWidth: 760, anchor: "middle" },
+  },
+  "thank-you-2": {
+    title: { x: W / 2, y: 360, maxWidth: 1180, anchor: "middle" },
+    subtitle: { x: W / 2, y: 500, maxWidth: 760, anchor: "middle" },
+  },
+};
+
 const PHOTO_AREAS: Record<FrameStyleId, PhotoArea | null> = {
-  "hackathon-1": { x: 720, y: 255, width: 1050, height: 620 },
-  "hackathon-2": { x: 300, y: 335, width: 1450, height: 520 },
-  "hackathon-3": { x: 300, y: 335, width: 1440, height: 520 },
-  "hackathon-4": { x: 220, y: 335, width: 1480, height: 520 },
-  "hackathon-5": { x: 360, y: 320, width: 1360, height: 560 },
-  "meetup-1": { x: 100, y: 340, width: 1570, height: 520 },
-  "meetup-2": { x: 100, y: 340, width: 1580, height: 500 },
-  "meetup-3": { x: 100, y: 340, width: 1510, height: 500 },
-  "meetup-4": { x: 100, y: 340, width: 1360, height: 500 },
-  "meetup-5": { x: 100, y: 340, width: 1510, height: 500 },
-  "cafe-1": { x: 890, y: 115, width: 740, height: 810 },
-  "cafe-2": { x: 440, y: 340, width: 1230, height: 480 },
-  "cafe-3": { x: 170, y: 340, width: 1430, height: 500 },
-  "cafe-4": { x: 100, y: 430, width: 1450, height: 460 },
-  "cafe-5": { x: 820, y: 130, width: 790, height: 800 },
+  "hackathon-1": { x: 590, y: 170, width: 1240, height: 765 },
+  "hackathon-2": { x: 90, y: 380, width: 1740, height: 555 },
+  "hackathon-3": { x: 90, y: 380, width: 1740, height: 555 },
+  "hackathon-4": { x: 90, y: 345, width: 1740, height: 590 },
+  "hackathon-5": { x: 90, y: 380, width: 1740, height: 555 },
+  "meetup-1": { x: 90, y: 380, width: 1740, height: 555 },
+  "meetup-2": { x: 90, y: 380, width: 1740, height: 555 },
+  "meetup-3": { x: 90, y: 380, width: 1740, height: 555 },
+  "meetup-4": { x: 90, y: 380, width: 1740, height: 555 },
+  "meetup-5": { x: 90, y: 390, width: 1740, height: 545 },
+  "cafe-1": { x: 590, y: 170, width: 1240, height: 765 },
+  "cafe-2": { x: 90, y: 380, width: 1740, height: 555 },
+  "cafe-3": { x: 90, y: 380, width: 1740, height: 555 },
+  "cafe-4": { x: 90, y: 380, width: 1740, height: 555 },
+  "cafe-5": { x: 590, y: 170, width: 1240, height: 765 },
   "announcement-1": null,
-  "announcement-2": null,
-  "announcement-3": null,
-  "announcement-4": { x: 100, y: 500, width: 1460, height: 410 },
-  "announcement-5": null,
+  "announcement-4": { x: 90, y: 400, width: 1740, height: 535 },
   "thank-you-1": null,
   "thank-you-2": null,
-  "thank-you-3": null,
-  "thank-you-4": null,
-  "thank-you-5": null,
 };
 
 const TEMPLATES: FrameTemplate[] = [
@@ -60,7 +165,6 @@ const TEMPLATES: FrameTemplate[] = [
     decor: "grid",
     title: "HACKATHON",
     subtitle: "Build fast. Ship smarter. With Cursor.",
-    status: "I'M BUILDING THE FUTURE AT",
     slot: PHOTO_AREAS["hackathon-1"],
     tags: ["hackathon", "build", "cursor"],
     description: "Bold text-forward hackathon frame with fixed Cursor layout.",
@@ -81,7 +185,7 @@ const TEMPLATES: FrameTemplate[] = [
     id: "hackathon-3",
     name: "Hackathon Impact",
     eventKind: "hackathon",
-    layout: "angled",
+    layout: "wide",
     decor: "dots",
     title: "HACKATHON",
     subtitle: "Turning ideas into impact",
@@ -165,7 +269,7 @@ const TEMPLATES: FrameTemplate[] = [
     id: "meetup-5",
     name: "Meetup Future",
     eventKind: "meetup",
-    layout: "wide",
+    layout: "angled",
     decor: "waves",
     title: "MEETUP",
     subtitle: "Building the future, one meetup at a time.",
@@ -189,7 +293,7 @@ const TEMPLATES: FrameTemplate[] = [
     id: "cafe-2",
     name: "Cafe Conversations",
     eventKind: "cafe",
-    layout: "wide",
+    layout: "angled",
     decor: "coffee",
     title: "CAFE CURSOR",
     subtitle: "Good conversations. Better code.",
@@ -235,7 +339,7 @@ const TEMPLATES: FrameTemplate[] = [
   },
   {
     id: "announcement-1",
-    name: "Announcement Big",
+    name: "Announcement Text",
     eventKind: "announcement",
     layout: "minimal",
     decor: "megaphone",
@@ -243,35 +347,11 @@ const TEMPLATES: FrameTemplate[] = [
     subtitle: "Big things are coming. Stay tuned!",
     slot: PHOTO_AREAS["announcement-1"],
     tags: ["announcement", "launch", "news"],
-    description: "Text-only announcement frame with fixed megaphone detail.",
-  },
-  {
-    id: "announcement-2",
-    name: "Announcement Soon",
-    eventKind: "announcement",
-    layout: "minimal",
-    decor: "dots",
-    title: "ANNOUNCEMENT",
-    subtitle: "Something exciting is on the way.",
-    slot: PHOTO_AREAS["announcement-2"],
-    tags: ["announcement", "soon", "teaser"],
-    description: "Announcement teaser frame with fixed dot field.",
-  },
-  {
-    id: "announcement-3",
-    name: "Announcement New",
-    eventKind: "announcement",
-    layout: "minimal",
-    decor: "spark",
-    title: "ANNOUNCEMENT",
-    subtitle: "New event. New experiences. New connections.",
-    slot: PHOTO_AREAS["announcement-3"],
-    tags: ["announcement", "event", "connections"],
-    description: "Announcement frame with arrow-style motion detail.",
+    description: "Centered text-only Cursor announcement frame.",
   },
   {
     id: "announcement-4",
-    name: "Announcement Ready",
+    name: "Announcement Photo",
     eventKind: "announcement",
     layout: "wide",
     decor: "minimal",
@@ -279,23 +359,11 @@ const TEMPLATES: FrameTemplate[] = [
     subtitle: "Get ready to build, learn & connect.",
     slot: PHOTO_AREAS["announcement-4"],
     tags: ["announcement", "build", "connect"],
-    description: "Announcement frame with fixed lower content slot.",
-  },
-  {
-    id: "announcement-5",
-    name: "Announcement Details",
-    eventKind: "announcement",
-    layout: "minimal",
-    decor: "spark",
-    title: "ANNOUNCEMENT",
-    subtitle: "More details coming soon!",
-    slot: PHOTO_AREAS["announcement-5"],
-    tags: ["announcement", "details", "soon"],
-    description: "Minimal announcement frame with sparkle accents.",
+    description: "Photo-led Cursor announcement frame.",
   },
   {
     id: "thank-you-1",
-    name: "Thank You Heart",
+    name: "Thank You Classic",
     eventKind: "thank-you",
     layout: "minimal",
     decor: "heart",
@@ -303,11 +371,11 @@ const TEMPLATES: FrameTemplate[] = [
     subtitle: "Thanks to everyone who joined and made it amazing.",
     slot: PHOTO_AREAS["thank-you-1"],
     tags: ["thank-you", "community", "recap"],
-    description: "Thank-you frame with heart detail.",
+    description: "Clean text-only Cursor thank-you frame.",
   },
   {
     id: "thank-you-2",
-    name: "Thank You Waves",
+    name: "Thank You Centered",
     eventKind: "thank-you",
     layout: "minimal",
     decor: "waves",
@@ -315,43 +383,7 @@ const TEMPLATES: FrameTemplate[] = [
     subtitle: "Grateful for the energy, ideas and connections.",
     slot: PHOTO_AREAS["thank-you-2"],
     tags: ["thank-you", "gratitude", "community"],
-    description: "Thank-you frame with fixed wave pattern.",
-  },
-  {
-    id: "thank-you-3",
-    name: "Thank You Memorable",
-    eventKind: "thank-you",
-    layout: "minimal",
-    decor: "heart",
-    title: "THANK YOU!",
-    subtitle: "You made it memorable!",
-    slot: PHOTO_AREAS["thank-you-3"],
-    tags: ["thank-you", "memorable", "event"],
-    description: "Thank-you frame with fixed heart badge.",
-  },
-  {
-    id: "thank-you-4",
-    name: "Thank You Next",
-    eventKind: "thank-you",
-    layout: "minimal",
-    decor: "spark",
-    title: "THANK YOU!",
-    subtitle: "Until next time. Keep building!",
-    slot: PHOTO_AREAS["thank-you-4"],
-    tags: ["thank-you", "builders", "next"],
-    description: "Thank-you frame with clean star accent.",
-  },
-  {
-    id: "thank-you-5",
-    name: "Thank You Community",
-    eventKind: "thank-you",
-    layout: "minimal",
-    decor: "waves",
-    title: "THANK YOU!",
-    subtitle: "Community. Code. Connection. That's Cursor.",
-    slot: PHOTO_AREAS["thank-you-5"],
-    tags: ["thank-you", "cursor", "community"],
-    description: "Thank-you frame with fixed wave fade.",
+    description: "Centered text-only Cursor thank-you frame.",
   },
 ];
 
@@ -365,29 +397,6 @@ function x(v: string | undefined, fallback = ""): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-function fitText(value: string, maxWidth: number, averageGlyph = 0.58): string {
-  const estimated = value.length * averageGlyph;
-  return estimated > maxWidth ? ` textLength="${maxWidth}" lengthAdjust="spacingAndGlyphs"` : "";
-}
-
-function fittedFontSize(value: string, baseSize: number, maxWidth: number, minSize = 38): number {
-  const estimatedWidth = value.length * baseSize * 0.64;
-  if (estimatedWidth <= maxWidth) return baseSize;
-  return Math.max(minSize, Math.floor((maxWidth / Math.max(value.length, 1)) / 0.64));
-}
-
-function textTouchesPhotoY(area: PhotoArea | null, y: number, fontSize: number): boolean {
-  if (!area) return false;
-  const top = y - fontSize;
-  const bottom = y + fontSize * 0.35;
-  return bottom >= area.y && top <= area.y + area.height;
-}
-
-function safeTextWidth(area: PhotoArea | null, x0: number, y: number, fontSize: number, fallback: number): number {
-  if (!area || x0 >= area.x || !textTouchesPhotoY(area, y, fontSize)) return fallback;
-  return Math.max(120, Math.min(fallback, area.x - x0 - 70));
 }
 
 function wrapText(value: string, maxWidth: number, fontSize: number, maxLines = 3): string[] {
@@ -450,7 +459,7 @@ function multilineText({
     .join("");
   const anchorAttr = anchor === "start" ? "" : ` text-anchor="${anchor}"`;
   const spacingAttr = letterSpacing ? ` letter-spacing="${letterSpacing}"` : "";
-  return `<text x="${x0}" y="${y}"${anchorAttr} font-family="'Geist','Inter',Arial,sans-serif" font-size="${fontSize}" font-weight="${weight}"${spacingAttr} fill="${fill}">${tspans}</text>`;
+  return `<text x="${x0}" y="${y}"${anchorAttr} font-family="${FONT_FAMILY}" font-size="${fontSize}" font-weight="${weight}"${spacingAttr} fill="${fill}">${tspans}</text>`;
 }
 
 function contentTitle(b: BrandingConfig, fallback: string): string {
@@ -465,19 +474,107 @@ function contentSubtitle(b: BrandingConfig, fallback: string): string {
   return value;
 }
 
-function tagFor(kind: EventKind): string {
-  switch (kind) {
-    case "hackathon":
-      return "#CursorHackathon";
-    case "meetup":
-      return "#CursorMeetup";
-    case "cafe":
-      return "#CafeCursor";
-    case "announcement":
-      return "#Cursor";
-    case "thank-you":
-      return "#Cursor";
+function resolveTextLayout(t: FrameTemplate, title: string): ResolvedTextLayout {
+  const isTextOnly = !t.slot;
+  const isAnnouncement = t.eventKind === "announcement";
+  const isBracket = t.layout === "bracket";
+  const staticLayout = TEXT_LAYOUTS[t.id];
+
+  if (isTextOnly) {
+    const titleLayer = staticLayout.title;
+    const titleMaxLines = titleLayer.maxLines ?? 2;
+    const subtitleLayer = staticLayout.subtitle ?? {
+      x: titleLayer.x,
+      y: titleLayer.y + TEXT_ONLY_TITLE_FONT_SIZE * 1.18 + 34,
+      maxWidth: titleLayer.maxWidth,
+      anchor: titleLayer.anchor,
+    };
+    const titleFontSize = TEXT_ONLY_TITLE_FONT_SIZE;
+    const titleLines = wrapText(title.toUpperCase(), titleLayer.maxWidth, titleFontSize, titleMaxLines);
+    const subtitleY = Math.max(subtitleLayer.y, titleLayer.y + titleLines.length * titleFontSize * 1.18 + 30);
+
+    return {
+      title: {
+        x: titleLayer.x,
+        y: titleLayer.y,
+        maxWidth: titleLayer.maxWidth,
+        fontSize: titleFontSize,
+        anchor: titleLayer.anchor,
+        maxLines: titleMaxLines,
+      },
+      subtitle: {
+        x: subtitleLayer.x,
+        y: subtitleY,
+        maxWidth: subtitleLayer.maxWidth,
+        fontSize: SUBTITLE_FONT_SIZE,
+        anchor: subtitleLayer.anchor,
+        maxLines: 3,
+      },
+    };
   }
+
+  if (isBracket) {
+    const titleLayer = staticLayout.title;
+    const titleMaxLines = titleLayer.maxLines ?? 2;
+    const subtitleLayer = staticLayout.subtitle ?? {
+      x: titleLayer.x,
+      y: titleLayer.y + 68,
+      maxWidth: 560,
+      anchor: titleLayer.anchor,
+    };
+    return {
+      title: {
+        x: titleLayer.x,
+        y: titleLayer.y,
+        maxWidth: titleLayer.maxWidth,
+        fontSize: TITLE_FONT_SIZE,
+        anchor: titleLayer.anchor,
+        maxLines: titleMaxLines,
+      },
+      subtitle: {
+        x: subtitleLayer.x,
+        y: subtitleLayer.y,
+        maxWidth: subtitleLayer.maxWidth,
+        fontSize: SUBTITLE_FONT_SIZE,
+        anchor: subtitleLayer.anchor,
+        maxLines: 3,
+      },
+    };
+  }
+
+  const titleLayer = staticLayout.title;
+  const titleMaxLines = titleLayer.maxLines ?? 2;
+  const subtitleLayer = staticLayout.subtitle ?? {
+    x: titleLayer.x,
+    y: titleLayer.y + TITLE_FONT_SIZE * 1.18 + SUBTITLE_FONT_SIZE + 16,
+    maxWidth: titleLayer.maxWidth,
+    anchor: titleLayer.anchor,
+  };
+  const titleFontSize = TITLE_FONT_SIZE;
+  const titleLines = wrapText(title.toUpperCase(), titleLayer.maxWidth, titleFontSize, titleMaxLines);
+  const subtitleY = Math.max(
+    subtitleLayer.y,
+    titleLayer.y + titleLines.length * titleFontSize * 1.18 + 16,
+  );
+
+  return {
+    title: {
+      x: titleLayer.x,
+      y: titleLayer.y,
+      maxWidth: titleLayer.maxWidth,
+      fontSize: titleFontSize,
+      anchor: titleLayer.anchor,
+      maxLines: titleMaxLines,
+    },
+    subtitle: {
+      x: subtitleLayer.x,
+      y: subtitleY,
+      maxWidth: subtitleLayer.maxWidth,
+      fontSize: SUBTITLE_FONT_SIZE,
+      anchor: subtitleLayer.anchor,
+      maxLines: 3,
+    },
+  };
 }
 
 function bgColor(): string {
@@ -498,7 +595,7 @@ function panelBg(area: PhotoArea | null, fill: string): string {
 }
 
 function logo(): string {
-  return cursorLogoSvg(92, 72, 38, { anchor: "top-left", opacity: 0.96 });
+  return cursorLogoSvg(LOGO_X, LOGO_Y, LOGO_HEIGHT, { anchor: "top-left", opacity: 0.96 });
 }
 
 function slotBorder(area: PhotoArea | null, layout: LayoutKind): string {
@@ -510,124 +607,67 @@ function slotBorder(area: PhotoArea | null, layout: LayoutKind): string {
   return `<path d="${path}" fill="none" stroke="rgba(255,255,255,0.86)" stroke-width="2.4" vector-effect="non-scaling-stroke"/>`;
 }
 
-function dotField(x0: number, y0: number, cols = 12, rows = 8, gap = 22): string {
-  const dots = Array.from({ length: cols * rows }, (_, i) => {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    return `<circle cx="${x0 + col * gap}" cy="${y0 + row * gap}" r="2.2"/>`;
-  }).join("");
-  return `<g fill="white" opacity="0.32">${dots}</g>`;
+function bracketTitle(title: string, layout: ResolvedTextLayer): string {
+  const size = layout.fontSize;
+  const isLong = title.length > 22;
+  const estimatedWidth = Math.min(layout.maxWidth, title.length * size * 0.64);
+  const braceOffset = estimatedWidth / 2 + 70;
+  const braceSize = Math.max(74, Math.round(size * 1.45));
+  const titleText = `<text x="${layout.x}" y="${layout.y}" text-anchor="middle" font-family="${FONT_FAMILY}" font-size="${size}" font-weight="${TITLE_WEIGHT}" letter-spacing="4" fill="white">${x(title).toUpperCase()}</text>`;
+
+  if (isLong || braceOffset > 680) return titleText;
+
+  return `<text x="${layout.x - braceOffset}" y="${layout.y + 2}" text-anchor="middle" font-family="${FONT_FAMILY}" font-size="${braceSize}" font-weight="${SUBTITLE_WEIGHT}" fill="rgba(255,255,255,0.88)">{</text>
+  ${titleText}
+  <text x="${layout.x + braceOffset}" y="${layout.y + 2}" text-anchor="middle" font-family="${FONT_FAMILY}" font-size="${braceSize}" font-weight="${SUBTITLE_WEIGHT}" fill="rgba(255,255,255,0.88)">}</text>`;
 }
 
-function gridDecor(): string {
-  return `<g fill="none" stroke="white" opacity="0.12" stroke-width="1">
-    <path d="M1180 80 L1870 80 L1870 1000"/>
-    <path d="M1250 135 L1870 135 M1320 190 L1870 190 M1390 245 L1870 245 M1460 300 L1870 300"/>
-    <path d="M1260 80 L1260 410 M1340 80 L1340 520 M1420 80 L1420 630 M1500 80 L1500 745 M1580 80 L1580 850"/>
-    <path d="M160 980 C300 860 480 790 720 775"/>
-  </g>`;
-}
-
-function cubeDecor(): string {
-  return `<g fill="none" stroke="white" opacity="0.36" stroke-width="2">
-    <path d="M1540 720 L1700 640 L1860 720 L1700 805 Z"/>
-    <path d="M1540 720 L1540 885 L1700 975 L1700 805"/>
-    <path d="M1860 720 L1860 885 L1700 975"/>
-    <path d="M1620 680 L1780 765 M1620 925 L1620 760 M1780 925 L1780 760"/>
-  </g>`;
-}
-
-function wavesDecor(y = 830): string {
-  return `<g fill="none" stroke="white" opacity="0.32" stroke-width="1.5">
-    ${Array.from({ length: 9 }, (_, i) => `<path d="M0 ${y + i * 18} C260 ${y - 70 + i * 12}, 420 ${y + 70 + i * 6}, 760 ${y + i * 16} S1240 ${y - 40 + i * 10}, 1560 ${y + i * 14}" />`).join("")}
-  </g>`;
-}
-
-function cityDecor(): string {
-  return `<g fill="none" stroke="white" opacity="0.34" stroke-width="2">
-    <path d="M1190 875 L1190 790 L1245 790 L1245 740 L1280 740 L1280 700 L1320 700 L1320 760 L1375 760 L1375 820 L1425 820 L1425 735 L1480 735 L1480 680 L1520 680 L1520 875"/>
-    <path d="M1090 875 L1605 875"/>
-  </g>`;
-}
-
-function chatDecor(): string {
-  return `<g fill="none" stroke="white" opacity="0.5" stroke-width="2.5">
-    <rect x="1550" y="260" width="130" height="92" rx="18"/>
-    <path d="M1590 352 L1565 392 L1630 352"/>
-    <rect x="1700" y="380" width="105" height="74" rx="15"/>
-    <path d="M1735 454 L1718 486 L1764 454"/>
-    <circle cx="1590" cy="305" r="5"/><circle cx="1620" cy="305" r="5"/><circle cx="1650" cy="305" r="5"/>
-  </g>`;
-}
-
-function coffeeDecor(): string {
-  return `<g fill="none" stroke="white" opacity="0.68" stroke-width="3">
-    <path d="M142 820 H315 V910 C315 954 284 980 230 980 H185 C152 980 126 950 126 910 V820"/>
-    <path d="M315 848 H360 C397 848 398 916 315 916"/>
-    <path d="M165 760 C132 715 205 704 172 650 M232 760 C199 715 272 704 239 650"/>
-  </g>`;
-}
-
-function megaphoneDecor(): string {
-  return `<g fill="none" stroke="white" opacity="0.68" stroke-width="3">
-    <path d="M145 760 L335 670 L335 850 L145 800 Z"/>
-    <path d="M145 760 L95 785 L95 830 L145 800"/>
-    <path d="M190 820 L230 940"/>
-    <path d="M365 675 C440 710 440 812 365 848"/>
-    <path d="M390 615 L455 565 M410 915 L470 980"/>
-  </g>`;
-}
-
-function sparkDecor(x0 = 1595, y0 = 760): string {
-  return `<g fill="none" stroke="white" opacity="0.62" stroke-width="3">
-    <path d="M${x0} ${y0 - 110} L${x0 + 28} ${y0 - 28} L${x0 + 110} ${y0} L${x0 + 28} ${y0 + 28} L${x0} ${y0 + 110} L${x0 - 28} ${y0 + 28} L${x0 - 110} ${y0} L${x0 - 28} ${y0 - 28} Z"/>
-    <path d="M${x0 + 190} ${y0 - 190} L${x0 + 205} ${y0 - 145} L${x0 + 250} ${y0 - 130} L${x0 + 205} ${y0 - 115} L${x0 + 190} ${y0 - 70} L${x0 + 175} ${y0 - 115} L${x0 + 130} ${y0 - 130} L${x0 + 175} ${y0 - 145} Z"/>
-  </g>`;
-}
-
-function heartDecor(): string {
-  return `<g fill="none" stroke="white" opacity="0.65" stroke-width="3">
-    <path d="M160 780 C90 710 115 610 205 610 C250 610 282 636 300 670 C318 636 350 610 395 610 C485 610 510 710 440 780 L300 925 Z"/>
-  </g>`;
-}
-
-function decor(kind: DecorKind): string {
-  switch (kind) {
-    case "grid":
-      return gridDecor();
-    case "cube":
-      return cubeDecor();
-    case "waves":
-      return wavesDecor();
-    case "dots":
-      return `${dotField(1580, 750, 13, 9, 22)}${dotField(120, 790, 8, 6, 20)}`;
-    case "city":
-      return cityDecor();
-    case "chat":
-      return chatDecor();
-    case "coffee":
-      return coffeeDecor();
-    case "megaphone":
-      return megaphoneDecor();
-    case "spark":
-      return sparkDecor();
-    case "heart":
-      return heartDecor();
-    case "minimal":
-      return "";
+function textOnlyDesign(t: FrameTemplate, title: string, subtitle: string, layout: ResolvedTextLayout): string {
+  const isAnnouncement = t.eventKind === "announcement";
+  if (isAnnouncement) {
+    const boxW = 1240;
+    const boxY = 260;
+    return `<rect x="${(W - boxW) / 2}" y="${boxY}" width="${boxW}" height="430" rx="46" fill="rgba(255,255,255,0.022)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+    <rect x="${(W - boxW) / 2 + 130}" y="${boxY + 320}" width="${boxW - 260}" height="2" fill="rgba(255,255,255,0.16)"/>
+    ${multilineText({ value: title.toUpperCase(), x0: layout.title.x, y: layout.title.y, maxWidth: layout.title.maxWidth, fontSize: layout.title.fontSize, weight: TITLE_WEIGHT, letterSpacing: 4, fill: "white", anchor: layout.title.anchor, maxLines: layout.title.maxLines })}
+    ${multilineText({ value: subtitle, x0: layout.subtitle.x, y: layout.subtitle.y, maxWidth: layout.subtitle.maxWidth, fontSize: layout.subtitle.fontSize, weight: SUBTITLE_WEIGHT, fill: "rgba(255,255,255,0.78)", anchor: layout.subtitle.anchor, maxLines: layout.subtitle.maxLines })}`;
   }
-}
 
-function bracketTitle(title: string): string {
-  const size = fittedFontSize(title, 56, 900, 30);
-  const isLong = title.length > 18;
-  if (isLong) {
-    return `<text x="${W / 2}" y="215" text-anchor="middle" font-family="'Geist','Inter',Arial,sans-serif" font-size="${size}" font-weight="820" letter-spacing="5" fill="white">${x(title).toUpperCase()}</text>`;
+  const bigTitle = multilineText({
+    value: title.toUpperCase(),
+    x0: layout.title.x,
+    y: layout.title.y,
+    maxWidth: layout.title.maxWidth,
+    fontSize: layout.title.fontSize,
+    weight: TITLE_WEIGHT,
+    letterSpacing: 4,
+    fill: "white",
+    anchor: layout.title.anchor,
+    maxLines: layout.title.maxLines,
+  });
+  const body = multilineText({
+    value: subtitle,
+    x0: layout.subtitle.x,
+    y: layout.subtitle.y,
+    maxWidth: layout.subtitle.maxWidth,
+    fontSize: layout.subtitle.fontSize,
+    weight: SUBTITLE_WEIGHT,
+    fill: "rgba(255,255,255,0.78)",
+    anchor: layout.subtitle.anchor,
+    maxLines: layout.subtitle.maxLines,
+  });
+
+  switch (t.id) {
+    case "thank-you-1":
+      return `<rect x="330" y="250" width="1260" height="455" rx="48" fill="rgba(255,255,255,0.022)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+      <rect x="540" y="610" width="840" height="2" fill="rgba(255,255,255,0.16)"/>
+      ${bigTitle}${body}`;
+    case "thank-you-2":
+      return `${bigTitle}${body}
+      <rect x="500" y="690" width="920" height="2" fill="rgba(255,255,255,0.18)"/>`;
+    default:
+      return `${bigTitle}${body}`;
   }
-  const braceSize = isLong ? 72 : 100;
-  return `<text x="510" y="220" text-anchor="middle" font-family="'Geist','Inter',Arial,sans-serif" font-size="${braceSize}" font-weight="520" fill="rgba(255,255,255,0.88)">{</text>
-  <text x="${W / 2}" y="215" text-anchor="middle" font-family="'Geist','Inter',Arial,sans-serif" font-size="${size}" font-weight="820" letter-spacing="5" fill="white">${x(title).toUpperCase()}</text>
-  <text x="1410" y="220" text-anchor="middle" font-family="'Geist','Inter',Arial,sans-serif" font-size="${braceSize}" font-weight="520" fill="rgba(255,255,255,0.88)">}</text>`;
 }
 
 function renderTemplate(t: FrameTemplate, b: BrandingConfig): string {
@@ -635,24 +675,9 @@ function renderTemplate(t: FrameTemplate, b: BrandingConfig): string {
   const sec = secondaryColor();
   const title = contentTitle(b, t.title);
   const subtitle = contentSubtitle(b, t.subtitle);
-  const tag = tagFor(t.eventKind);
   const isBracket = t.layout === "bracket";
-  const isHero = t.layout === "hero";
-  const titleX = isBracket ? W / 2 : 95;
-  const titleY = isHero ? 585 : 205;
-  const titleSize = isHero ? 82 : t.eventKind === "announcement" || t.eventKind === "thank-you" ? 50 : 64;
-  const subtitleY = isHero ? 730 : t.eventKind === "announcement" || t.eventKind === "thank-you" ? 315 : 270;
-  const titleMaxWidth = isHero ? 560 : t.eventKind === "announcement" || t.eventKind === "thank-you" ? 760 : 860;
-  const subtitleMaxWidth = isBracket ? 560 : isHero ? 540 : 760;
-  const titleFontSize = fittedFontSize(title, titleSize, titleMaxWidth, isHero ? 42 : 38);
-  const titleSafeWidth = safeTextWidth(t.slot, titleX, titleY, titleFontSize, titleMaxWidth);
-  const titleLines = wrapText(title.toUpperCase(), titleSafeWidth, titleFontSize, isHero ? 3 : 2);
-  const subtitleFontSize = isHero ? 29 : 24;
-  const titleBlockBottom = titleY + (titleLines.length - 1) * titleFontSize * 1.18;
-  const adjustedSubtitleY = isBracket ? subtitleY : Math.max(subtitleY, titleBlockBottom + subtitleFontSize + 18);
-  const subtitleSafeWidth = safeTextWidth(t.slot, isBracket ? W / 2 : 98, adjustedSubtitleY, subtitleFontSize, subtitleMaxWidth);
-  const statusY = titleY - 135;
-  const statusSafeWidth = safeTextWidth(t.slot, titleX, statusY, 38, 500);
+  const isTextOnly = !t.slot;
+  const textLayout = resolveTextLayout(t, title);
 
   return enc(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
@@ -668,18 +693,13 @@ function renderTemplate(t: FrameTemplate, b: BrandingConfig): string {
   </defs>
   ${panelBg(t.slot, bg)}
   <rect x="0" y="0" width="${W}" height="${H}" fill="url(#glow)" opacity="0.35"/>
-  <rect x="24" y="24" width="${W - 48}" height="${H - 48}" fill="none" stroke="url(#edge)" stroke-width="1.5"/>
   ${logo()}
-  ${decor(t.decor)}
   ${slotBorder(t.slot, t.layout)}
-  ${isBracket ? bracketTitle(title) : `
-  ${t.status ? multilineText({ value: t.status.toUpperCase(), x0: titleX, y: statusY, maxWidth: statusSafeWidth, fontSize: 38, weight: 760, letterSpacing: 1.5, fill: "white", maxLines: 2 }) : ""}
-  ${multilineText({ value: title.toUpperCase(), x0: titleX, y: titleY, maxWidth: titleSafeWidth, fontSize: titleFontSize, weight: 830, letterSpacing: 4, fill: "white", maxLines: isHero ? 3 : 2 })}`}
-  ${isBracket
-    ? `<text x="${W / 2}" y="278" text-anchor="middle" font-family="'Geist','Inter',Arial,sans-serif" font-size="24" font-weight="520" fill="rgba(255,255,255,0.82)"${fitText(subtitle, subtitleMaxWidth, 14)}>${x(subtitle)}</text>`
-    : multilineText({ value: subtitle, x0: 98, y: adjustedSubtitleY, maxWidth: subtitleSafeWidth, fontSize: subtitleFontSize, weight: 520, fill: "rgba(255,255,255,0.82)", maxLines: 3 })}
-  ${b.date && b.date !== DEFAULT_BRANDING.date ? `<text x="98" y="955" font-family="'Geist','Inter',Arial,sans-serif" font-size="22" font-weight="600" fill="rgba(255,255,255,0.58)"${fitText(`${b.date}${b.location ? ` · ${b.location}` : ""}`, 760, 13)}>${x(b.date)}${b.location ? ` · ${x(b.location)}` : ""}</text>` : ""}
-  <text x="${W - 98}" y="985" text-anchor="end" font-family="'Geist','Inter',Arial,sans-serif" font-size="18" font-weight="700" fill="rgba(255,255,255,0.88)">${x(tag)}</text>
+  ${isTextOnly ? textOnlyDesign(t, title, subtitle, textLayout) : isBracket ? bracketTitle(title, textLayout.title) : `
+  ${multilineText({ value: title.toUpperCase(), x0: textLayout.title.x, y: textLayout.title.y, maxWidth: textLayout.title.maxWidth, fontSize: textLayout.title.fontSize, weight: TITLE_WEIGHT, letterSpacing: 4, fill: "white", anchor: textLayout.title.anchor, maxLines: textLayout.title.maxLines })}`}
+  ${isTextOnly ? "" : isBracket
+    ? multilineText({ value: subtitle, x0: textLayout.subtitle.x, y: textLayout.subtitle.y, maxWidth: textLayout.subtitle.maxWidth, fontSize: textLayout.subtitle.fontSize, weight: SUBTITLE_WEIGHT, fill: "rgba(255,255,255,0.82)", anchor: textLayout.subtitle.anchor, maxLines: textLayout.subtitle.maxLines })
+    : multilineText({ value: subtitle, x0: textLayout.subtitle.x, y: textLayout.subtitle.y, maxWidth: textLayout.subtitle.maxWidth, fontSize: textLayout.subtitle.fontSize, weight: SUBTITLE_WEIGHT, fill: "rgba(255,255,255,0.82)", anchor: textLayout.subtitle.anchor, maxLines: textLayout.subtitle.maxLines })}
 </svg>`);
 }
 
@@ -688,10 +708,6 @@ type FrameGenerator = (b: BrandingConfig) => string;
 const GENERATORS = Object.fromEntries(
   TEMPLATES.map((template) => [template.id, (branding: BrandingConfig) => renderTemplate(template, branding)])
 ) as Record<FrameStyleId, FrameGenerator>;
-
-export function defaultBrandingPosition(): { x: number; y: number } {
-  return { x: 92, y: 72 };
-}
 
 export function getFramePhotoArea(styleId: FrameStyleId): PhotoArea | null {
   return PHOTO_AREAS[styleId];
