@@ -1,5 +1,13 @@
 import { BrandingConfig, DEFAULT_BRANDING, Frame, FrameStyleId, PhotoArea } from "@/types";
 import { cursorLogoSvg } from "@/lib/cursor-logo-svg";
+import {
+  FRAME_BODY_WEIGHT,
+  FRAME_DISPLAY_FONT,
+  FRAME_SUBTITLE_TRACKING,
+  FRAME_TITLE_TRACKING,
+  FRAME_TITLE_WEIGHT,
+  LOCAL_FONT_FACE_CSS,
+} from "@/lib/frame-typography";
 
 const W = 1920;
 const H = 1080;
@@ -44,12 +52,9 @@ interface ResolvedTextLayout {
   subtitle: ResolvedTextLayer;
 }
 
-const FONT_FAMILY = "'Geist','Inter',Arial,sans-serif";
 const TITLE_FONT_SIZE = 58;
 const SUBTITLE_FONT_SIZE = 24;
 const TEXT_ONLY_TITLE_FONT_SIZE = TITLE_FONT_SIZE;
-const TITLE_WEIGHT = 830;
-const SUBTITLE_WEIGHT = 520;
 const LOGO_X = 78;
 const LOGO_Y = 58;
 const LOGO_HEIGHT = 38;
@@ -458,7 +463,7 @@ function multilineText({
     .join("");
   const anchorAttr = anchor === "start" ? "" : ` text-anchor="${anchor}"`;
   const spacingAttr = letterSpacing ? ` letter-spacing="${letterSpacing}"` : "";
-  return `<text x="${x0}" y="${y}"${anchorAttr} font-family="${FONT_FAMILY}" font-size="${fontSize}" font-weight="${weight}"${spacingAttr} fill="${fill}">${tspans}</text>`;
+  return `<text x="${x0}" y="${y}"${anchorAttr} font-family="${FRAME_DISPLAY_FONT}" font-size="${fontSize}" font-weight="${weight}"${spacingAttr} fill="${fill}">${tspans}</text>`;
 }
 
 function contentTitle(b: BrandingConfig, fallback: string): string {
@@ -611,13 +616,13 @@ function bracketTitle(title: string, layout: ResolvedTextLayer): string {
   const estimatedWidth = Math.min(layout.maxWidth, title.length * size * 0.64);
   const braceOffset = estimatedWidth / 2 + 70;
   const braceSize = Math.max(74, Math.round(size * 1.45));
-  const titleText = `<text x="${layout.x}" y="${layout.y}" text-anchor="middle" font-family="${FONT_FAMILY}" font-size="${size}" font-weight="${TITLE_WEIGHT}" letter-spacing="4" fill="white">${x(title).toUpperCase()}</text>`;
+  const titleText = `<text x="${layout.x}" y="${layout.y}" text-anchor="middle" font-family="${FRAME_DISPLAY_FONT}" font-size="${size}" font-weight="${FRAME_TITLE_WEIGHT}" letter-spacing="${FRAME_TITLE_TRACKING}" fill="white">${x(title).toUpperCase()}</text>`;
 
   if (isLong || braceOffset > 680) return titleText;
 
-  return `<text x="${layout.x - braceOffset}" y="${layout.y + 2}" text-anchor="middle" font-family="${FONT_FAMILY}" font-size="${braceSize}" font-weight="${SUBTITLE_WEIGHT}" fill="rgba(255,255,255,0.88)">{</text>
+  return `<text x="${layout.x - braceOffset}" y="${layout.y + 2}" text-anchor="middle" font-family="${FRAME_DISPLAY_FONT}" font-size="${braceSize}" font-weight="${FRAME_BODY_WEIGHT}" fill="rgba(255,255,255,0.88)">{</text>
   ${titleText}
-  <text x="${layout.x + braceOffset}" y="${layout.y + 2}" text-anchor="middle" font-family="${FONT_FAMILY}" font-size="${braceSize}" font-weight="${SUBTITLE_WEIGHT}" fill="rgba(255,255,255,0.88)">}</text>`;
+  <text x="${layout.x + braceOffset}" y="${layout.y + 2}" text-anchor="middle" font-family="${FRAME_DISPLAY_FONT}" font-size="${braceSize}" font-weight="${FRAME_BODY_WEIGHT}" fill="rgba(255,255,255,0.88)">}</text>`;
 }
 
 function textOnlyDesign(t: FrameTemplate, title: string, subtitle: string, layout: ResolvedTextLayout): string {
@@ -627,8 +632,8 @@ function textOnlyDesign(t: FrameTemplate, title: string, subtitle: string, layou
     const boxY = 260;
     return `<rect x="${(W - boxW) / 2}" y="${boxY}" width="${boxW}" height="430" rx="46" fill="rgba(255,255,255,0.022)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
     <rect x="${(W - boxW) / 2 + 130}" y="${boxY + 320}" width="${boxW - 260}" height="2" fill="rgba(255,255,255,0.16)"/>
-    ${multilineText({ value: title.toUpperCase(), x0: layout.title.x, y: layout.title.y, maxWidth: layout.title.maxWidth, fontSize: layout.title.fontSize, weight: TITLE_WEIGHT, letterSpacing: 4, fill: "white", anchor: layout.title.anchor, maxLines: layout.title.maxLines })}
-    ${multilineText({ value: subtitle, x0: layout.subtitle.x, y: layout.subtitle.y, maxWidth: layout.subtitle.maxWidth, fontSize: layout.subtitle.fontSize, weight: SUBTITLE_WEIGHT, fill: "rgba(255,255,255,0.78)", anchor: layout.subtitle.anchor, maxLines: layout.subtitle.maxLines })}`;
+    ${multilineText({ value: title.toUpperCase(), x0: layout.title.x, y: layout.title.y, maxWidth: layout.title.maxWidth, fontSize: layout.title.fontSize, weight: FRAME_TITLE_WEIGHT, letterSpacing: FRAME_TITLE_TRACKING, fill: "white", anchor: layout.title.anchor, maxLines: layout.title.maxLines })}
+    ${multilineText({ value: subtitle, x0: layout.subtitle.x, y: layout.subtitle.y, maxWidth: layout.subtitle.maxWidth, fontSize: layout.subtitle.fontSize, weight: FRAME_BODY_WEIGHT, letterSpacing: FRAME_SUBTITLE_TRACKING, fill: "rgba(255,255,255,0.78)", anchor: layout.subtitle.anchor, maxLines: layout.subtitle.maxLines })}`;
   }
 
   const bigTitle = multilineText({
@@ -637,8 +642,8 @@ function textOnlyDesign(t: FrameTemplate, title: string, subtitle: string, layou
     y: layout.title.y,
     maxWidth: layout.title.maxWidth,
     fontSize: layout.title.fontSize,
-    weight: TITLE_WEIGHT,
-    letterSpacing: 4,
+    weight: FRAME_TITLE_WEIGHT,
+    letterSpacing: FRAME_TITLE_TRACKING,
     fill: "white",
     anchor: layout.title.anchor,
     maxLines: layout.title.maxLines,
@@ -649,7 +654,8 @@ function textOnlyDesign(t: FrameTemplate, title: string, subtitle: string, layou
     y: layout.subtitle.y,
     maxWidth: layout.subtitle.maxWidth,
     fontSize: layout.subtitle.fontSize,
-    weight: SUBTITLE_WEIGHT,
+    weight: FRAME_BODY_WEIGHT,
+    letterSpacing: FRAME_SUBTITLE_TRACKING,
     fill: "rgba(255,255,255,0.78)",
     anchor: layout.subtitle.anchor,
     maxLines: layout.subtitle.maxLines,
@@ -679,6 +685,7 @@ function renderTemplate(t: FrameTemplate, b: BrandingConfig): string {
 
   return enc(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
+    <style>${LOCAL_FONT_FACE_CSS}</style>
     <radialGradient id="glow" cx="72%" cy="20%" r="72%">
       <stop offset="0%" stop-color="${sec}" stop-opacity="0.42"/>
       <stop offset="100%" stop-color="${bg}" stop-opacity="0"/>
@@ -694,10 +701,10 @@ function renderTemplate(t: FrameTemplate, b: BrandingConfig): string {
   ${logo()}
   ${slotBorder(t.slot, t.layout)}
   ${isTextOnly ? textOnlyDesign(t, title, subtitle, textLayout) : isBracket ? bracketTitle(title, textLayout.title) : `
-  ${multilineText({ value: title.toUpperCase(), x0: textLayout.title.x, y: textLayout.title.y, maxWidth: textLayout.title.maxWidth, fontSize: textLayout.title.fontSize, weight: TITLE_WEIGHT, letterSpacing: 4, fill: "white", anchor: textLayout.title.anchor, maxLines: textLayout.title.maxLines })}`}
+  ${multilineText({ value: title.toUpperCase(), x0: textLayout.title.x, y: textLayout.title.y, maxWidth: textLayout.title.maxWidth, fontSize: textLayout.title.fontSize, weight: FRAME_TITLE_WEIGHT, letterSpacing: FRAME_TITLE_TRACKING, fill: "white", anchor: textLayout.title.anchor, maxLines: textLayout.title.maxLines })}`}
   ${isTextOnly ? "" : isBracket
-    ? multilineText({ value: subtitle, x0: textLayout.subtitle.x, y: textLayout.subtitle.y, maxWidth: textLayout.subtitle.maxWidth, fontSize: textLayout.subtitle.fontSize, weight: SUBTITLE_WEIGHT, fill: "rgba(255,255,255,0.82)", anchor: textLayout.subtitle.anchor, maxLines: textLayout.subtitle.maxLines })
-    : multilineText({ value: subtitle, x0: textLayout.subtitle.x, y: textLayout.subtitle.y, maxWidth: textLayout.subtitle.maxWidth, fontSize: textLayout.subtitle.fontSize, weight: SUBTITLE_WEIGHT, fill: "rgba(255,255,255,0.82)", anchor: textLayout.subtitle.anchor, maxLines: textLayout.subtitle.maxLines })}
+    ? multilineText({ value: subtitle, x0: textLayout.subtitle.x, y: textLayout.subtitle.y, maxWidth: textLayout.subtitle.maxWidth, fontSize: textLayout.subtitle.fontSize, weight: FRAME_BODY_WEIGHT, letterSpacing: FRAME_SUBTITLE_TRACKING, fill: "rgba(255,255,255,0.82)", anchor: textLayout.subtitle.anchor, maxLines: textLayout.subtitle.maxLines })
+    : multilineText({ value: subtitle, x0: textLayout.subtitle.x, y: textLayout.subtitle.y, maxWidth: textLayout.subtitle.maxWidth, fontSize: textLayout.subtitle.fontSize, weight: FRAME_BODY_WEIGHT, letterSpacing: FRAME_SUBTITLE_TRACKING, fill: "rgba(255,255,255,0.82)", anchor: textLayout.subtitle.anchor, maxLines: textLayout.subtitle.maxLines })}
 </svg>`);
 }
 
