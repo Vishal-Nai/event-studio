@@ -28,6 +28,7 @@ const XIcon = () => (
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { generateCaptions, formatCaptionForShare } from "@/lib/captions";
+import { BrandingConfig } from "@/types";
 import {
   buildLinkedInShareUrl,
   buildTwitterShareUrl,
@@ -39,7 +40,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface SharePanelProps {
-  eventName: string;
+  eventDetails: BrandingConfig;
   onExport: () => Promise<string>;
   hasPhoto: boolean;
   hasFrame: boolean;
@@ -47,20 +48,23 @@ interface SharePanelProps {
 }
 
 export function SharePanel({
-  eventName,
+  eventDetails,
   onExport,
   hasPhoto,
   hasFrame,
   requiresPhoto = true,
 }: SharePanelProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const [captionsOpen, setCaptionsOpen] = useState(false);
-  const captions = useMemo(() => generateCaptions(eventName), [eventName]);
+  const [captionsOpen, setCaptionsOpen] = useState(true);
+  const captions = useMemo(() => generateCaptions(eventDetails), [eventDetails]);
   const [selectedCaptionIdx, setSelectedCaptionIdx] = useState(0);
   const [copiedCaption, setCopiedCaption] = useState(false);
   const safeCaptionIdx = selectedCaptionIdx % captions.length;
 
   const canExport = hasFrame && (requiresPhoto ? hasPhoto : true);
+  const imageFileName = eventDetails.eventName
+    ? `${eventDetails.eventName.toLowerCase().replace(/^\//, "").replace(/\s+/g, "-")}-photo.png`
+    : "event-photo.png";
 
   const getExportedImage = useCallback(async (): Promise<string | null> => {
     if (!hasFrame) {
@@ -85,10 +89,7 @@ export function SharePanel({
   const handleDownload = async () => {
     const dataUrl = await getExportedImage();
     if (!dataUrl) return;
-    const name = eventName
-      ? `${eventName.toLowerCase().replace(/\s+/g, "-")}-photo.png`
-      : "event-photo.png";
-    downloadDataUrl(dataUrl, name);
+    downloadDataUrl(dataUrl, imageFileName);
     toast.success("Image saved!");
   };
 
@@ -106,8 +107,11 @@ export function SharePanel({
   const handleLinkedIn = async () => {
     const dataUrl = await getExportedImage();
     if (!dataUrl) return;
-    downloadDataUrl(dataUrl, "event-photo.png");
-    toast.info("Image downloaded — attach it in the LinkedIn post that opens.");
+    const caption = captions[safeCaptionIdx];
+    const text = formatCaptionForShare(caption);
+    downloadDataUrl(dataUrl, imageFileName);
+    await copyCaptionForFallback(text);
+    toast.info("Image saved and caption copied. Add the image to the LinkedIn post that opens.");
     setTimeout(() => {
       openInNewTab(buildLinkedInShareUrl());
     }, 800);
@@ -117,11 +121,21 @@ export function SharePanel({
     const dataUrl = await getExportedImage();
     if (!dataUrl) return;
     const caption = captions[safeCaptionIdx];
-    downloadDataUrl(dataUrl, "event-photo.png");
-    toast.info("Image downloaded — attach it in the X post that opens.");
+    const text = formatCaptionForShare(caption);
+    downloadDataUrl(dataUrl, imageFileName);
+    await copyCaptionForFallback(text);
+    toast.info("Image saved and caption copied. Add the image to the X post that opens.");
     setTimeout(() => {
       openInNewTab(buildTwitterShareUrl(caption.text, caption.hashtags));
     }, 800);
+  };
+
+  const copyCaptionForFallback = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // The social compose fallback still opens even if clipboard permission is denied.
+    }
   };
 
   const handleCopyCaption = async () => {
@@ -227,7 +241,7 @@ export function SharePanel({
         </div>
 
         <p className="text-[10px] text-white/25 text-center leading-relaxed">
-          We save the image first, then open the social app so you can attach it.
+          We save the image, copy the caption, then open the selected platform.
         </p>
       </div>
 

@@ -1,112 +1,86 @@
 "use client";
 
-import { memo, useRef } from "react";
+import { memo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, Sparkles, CheckCircle2 } from "lucide-react";
+import { Sparkles, CheckCircle2 } from "lucide-react";
 import { Frame } from "@/types";
+import { drawComposite, getCanvasDisplaySize, loadImage, toCanvasArea } from "@/lib/canvas";
 import { cn } from "@/lib/utils";
 
 interface FrameSelectorProps {
   frames: Frame[];
   selectedFrameId: string | null;
   onSelectFrame: (frame: Frame) => void;
-  onClearFrame: () => void;
-  onCreateFrame?: () => void;
   variant?: "sidebar" | "banner";
+  previewPhotoSrc?: string | null;
 }
 
 export function FrameSelectorInner({
   frames,
   selectedFrameId,
   onSelectFrame,
-  onClearFrame,
-  onCreateFrame,
   variant = "sidebar",
+  previewPhotoSrc,
 }: FrameSelectorProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [previews, setPreviews] = useState<Record<string, string>>({});
   const isBanner = variant === "banner";
-  const thumbSize = isBanner ? "w-[76px]" : "w-[72px]";
-  const noneSize = isBanner ? "w-[76px] h-[76px]" : "w-16 h-16";
-  const newSize = isBanner ? "w-[76px] h-[76px]" : "w-16 h-16";
+  const thumbSize = isBanner ? "" : "";
 
-  const scroll = (dir: "left" | "right") => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -240 : 240, behavior: "smooth" });
-  };
+  useEffect(() => {
+    if (!previewPhotoSrc) {
+      const id = window.setTimeout(() => setPreviews({}), 0);
+      return () => window.clearTimeout(id);
+    }
+
+    let cancelled = false;
+    const photoSrc = previewPhotoSrc;
+    async function buildPreviews() {
+      try {
+        const photo = await loadImage(photoSrc);
+        const entries = await Promise.all(
+          frames.map(async (frame) => {
+            if (frame.photoArea === null) return [frame.id, frame.imageUrl] as const;
+            const frameImage = await loadImage(frame.imageUrl);
+            const display = getCanvasDisplaySize(frame.aspectRatio);
+            const canvas = document.createElement("canvas");
+            canvas.width = 280;
+            canvas.height = Math.round(280 * (display.height / display.width));
+            const area = toCanvasArea(frame.photoArea, frame.aspectRatio);
+            const isPortrait = photo.naturalHeight > photo.naturalWidth;
+            const scale = isPortrait
+              ? area.width / photo.naturalWidth
+              : Math.max(area.width / photo.naturalWidth, area.height / photo.naturalHeight);
+            drawComposite(canvas, {
+              photo,
+              frame: frameImage,
+              transform: { x: 0, y: isPortrait ? photo.naturalHeight * scale * 0.13 : 0, scale, rotation: 0 },
+              canvasWidth: canvas.width,
+              canvasHeight: canvas.height,
+              aspectRatio: frame.aspectRatio,
+              photoArea: frame.photoArea,
+            });
+            return [frame.id, canvas.toDataURL("image/png", 0.85)] as const;
+          })
+        );
+        if (!cancelled) setPreviews(Object.fromEntries(entries));
+      } catch {
+        if (!cancelled) setPreviews({});
+      }
+    }
+
+    buildPreviews();
+    return () => { cancelled = true; };
+  }, [frames, previewPhotoSrc]);
 
   return (
     <div className="space-y-3">
-      {!isBanner && (
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-white/50 uppercase tracking-widest">Styles</span>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => scroll("left")}
-              className="w-6 h-6 rounded-md flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => scroll("right")}
-              className="w-6 h-6 rounded-md flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.06] transition-colors"
-              aria-label="Scroll right"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className={cn("relative", isBanner && "group/strip")}>
-        {isBanner && (
-          <>
-            <button
-              type="button"
-              onClick={() => scroll("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white opacity-0 group-hover/strip:opacity-100 transition-opacity hidden sm:flex"
-              aria-label="Scroll styles left"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => scroll("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white opacity-0 group-hover/strip:opacity-100 transition-opacity hidden sm:flex"
-              aria-label="Scroll styles right"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </>
-        )}
-
+      <div className="relative">
         <div
-          ref={scrollRef}
           className={cn(
-            "flex gap-2.5 overflow-x-auto scrollbar-hide pb-1",
-            isBanner && "px-1 sm:px-2"
+            "grid gap-2.5",
+            isBanner ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-2" : "grid-cols-2"
           )}
         >
-          <button
-            type="button"
-            onClick={onClearFrame}
-            className={cn(
-              "flex-shrink-0 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1",
-              noneSize,
-              !selectedFrameId
-                ? "border-violet-500 bg-violet-500/10"
-                : "border-white/10 bg-white/[0.03] hover:border-white/20"
-            )}
-            aria-label="No style"
-          >
-            {!selectedFrameId && <CheckCircle2 className="w-4 h-4 text-violet-400" />}
-            <span className="text-[10px] text-white/40">No style</span>
-          </button>
-
           {frames.map((frame) => {
             const isSelected = selectedFrameId === frame.id;
             return (
@@ -114,7 +88,7 @@ export function FrameSelectorInner({
                 key={frame.id}
                 type="button"
                 onClick={() => onSelectFrame(frame)}
-                className={cn("relative flex-shrink-0 flex flex-col gap-1.5 items-center", thumbSize)}
+                className={cn("relative flex flex-col gap-1.5 items-center min-w-0", thumbSize)}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
                 aria-label={frame.name}
@@ -123,16 +97,19 @@ export function FrameSelectorInner({
               >
                 <div
                   className={cn(
-                    "w-full aspect-square rounded-xl overflow-hidden border-2 transition-all relative",
+                    "w-full rounded-xl overflow-hidden border-2 transition-all relative",
                     isSelected
                       ? "border-violet-500 ring-2 ring-violet-500/40"
                       : "border-white/10 hover:border-white/25"
                   )}
+                  style={{
+                    aspectRatio: frame.aspectRatio === "16:9" ? "16 / 9" : frame.aspectRatio === "4:5" ? "4 / 5" : "1 / 1",
+                  }}
                 >
                   <div className="absolute inset-0 bg-[#111118]" />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={frame.imageUrl}
+                    src={previews[frame.id] ?? frame.imageUrl}
                     alt={frame.name}
                     loading="lazy"
                     decoding="async"
@@ -161,32 +138,6 @@ export function FrameSelectorInner({
             );
           })}
 
-          {onCreateFrame ? (
-            <button
-              type="button"
-              onClick={onCreateFrame}
-              className={cn(
-                "flex-shrink-0 rounded-xl border-2 border-dashed border-white/10 hover:border-violet-500/50 flex flex-col items-center justify-center gap-1 transition-all hover:bg-violet-500/5 group",
-                newSize
-              )}
-              aria-label="Create new style"
-            >
-              <Plus className="w-4 h-4 text-white/25 group-hover:text-violet-400 transition-colors" />
-              <span className="text-[9px] text-white/25 group-hover:text-violet-400 transition-colors">Create</span>
-            </button>
-          ) : (
-            <Link
-              href="/frames?create=1"
-              className={cn(
-                "flex-shrink-0 rounded-xl border-2 border-dashed border-white/10 hover:border-violet-500/50 flex flex-col items-center justify-center gap-1 transition-all hover:bg-violet-500/5 group",
-                newSize
-              )}
-              aria-label="Create new style"
-            >
-              <Plus className="w-4 h-4 text-white/25 group-hover:text-violet-400 transition-colors" />
-              <span className="text-[9px] text-white/25 group-hover:text-violet-400 transition-colors">Create</span>
-            </Link>
-          )}
         </div>
       </div>
 
@@ -212,7 +163,7 @@ export function FrameSelectorInner({
                     <p className="text-[10px] text-white/30 leading-snug mt-0.5">{frame.description}</p>
                   )}
                   {!frame.description && (
-                    <p className="text-[10px] text-white/30 capitalize">{frame.category === "custom" ? "My style" : "Ready-made"}</p>
+                    <p className="text-[10px] text-white/30 capitalize">Ready-made</p>
                   )}
                 </div>
               </div>

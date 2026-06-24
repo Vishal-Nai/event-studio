@@ -13,9 +13,9 @@ const LinkedInIcon = () => (
   </svg>
 );
 
-const GithubIcon = () => (
+const LinkIcon = () => (
   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor">
-    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+    <path d="M3.9 12a5 5 0 0 1 5-5h4v2h-4a3 3 0 0 0 0 6h4v2h-4a5 5 0 0 1-5-5Zm5.6 1h5v-2h-5v2Zm1.6 4h4a5 5 0 0 0 0-10h-4v2h4a3 3 0 0 1 0 6h-4v2Z" />
   </svg>
 );
 
@@ -24,24 +24,34 @@ export function Footer() {
     <footer className="border-t border-white/[0.06] mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Brand */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-center gap-2 md:items-start">
+            <div className="flex items-center gap-3">
             <CursorLogo height={22} />
             <span className="text-sm text-white/30 hidden sm:block">Event Studio</span>
+            </div>
+            <p className="text-xs text-white/35">
+              Built with Cursor by{" "}
+              <a
+                href="https://www.linkedin.com/in/vishalnai56/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-white"
+              >
+                Vishal Nai
+              </a>
+            </p>
           </div>
 
           {/* Links */}
           <nav className="flex items-center gap-6 text-sm text-white/50">
             <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
             <Link href="/editor" className="hover:text-white/80 transition-colors">Make Post</Link>
-            <Link href="/frames" className="hover:text-white/80 transition-colors">Styles</Link>
-            <Link href="/frames?create=1" className="hover:text-white/80 transition-colors">Create Style</Link>
           </nav>
 
           {/* Social */}
           <div className="flex items-center gap-3">
             <a
-              href="https://twitter.com"
+              href="https://x.com/vishalnai56"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-lg glass flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all"
@@ -50,7 +60,7 @@ export function Footer() {
               <XIcon />
             </a>
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/vishalnai56/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-lg glass flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all"
@@ -59,19 +69,19 @@ export function Footer() {
               <LinkedInIcon />
             </a>
             <a
-              href="https://github.com"
+              href="https://linktr.ee/vishalnai"
               target="_blank"
               rel="noopener noreferrer"
               className="w-8 h-8 rounded-lg glass flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all"
-              aria-label="GitHub"
+              aria-label="Linktree"
             >
-              <GithubIcon />
+              <LinkIcon />
             </a>
           </div>
         </div>
 
         <div className="mt-8 pt-6 border-t border-white/[0.05] text-center text-xs text-white/30">
-          <p>Upload a photo, try a style, and save a post-ready event image.</p>
+          <p>Upload a photo, choose a fixed Cursor frame, and save a post-ready event image.</p>
         </div>
       </div>
     </footer>

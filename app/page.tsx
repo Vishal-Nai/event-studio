@@ -5,15 +5,13 @@ import Link from "next/link";
 import {
   Upload,
   Layers,
-  ZoomIn,
   Share2,
   Download,
   Move,
-  RotateCw,
   Sparkles,
   ArrowRight,
   CheckCircle2,
-  Images,
+  Wand2,
 } from "lucide-react";
 import { useBranding } from "@/hooks/useBranding";
 import { useFrames } from "@/hooks/useFrames";
@@ -44,9 +42,9 @@ const FEATURES = [
     iconColor: "text-blue-400",
   },
   {
-    icon: ZoomIn,
-    title: "Make it fit",
-    description: "Use simple controls to make the photo bigger, center it, or rotate it.",
+    icon: Move,
+    title: "Position naturally",
+    description: "Drag the photo inside the fixed frame. Scroll or pinch to zoom without extra controls.",
     color: "from-cyan-500/20 to-cyan-600/10",
     iconColor: "text-cyan-400",
   },
@@ -59,37 +57,39 @@ const FEATURES = [
   },
   {
     icon: Sparkles,
-    title: "Use a suggested caption",
-    description: "Copy a ready-made caption with hashtags when you want help writing the post.",
+    title: "Choose fixed Cursor frames",
+    description: "Pick from curated Hackathon, Meetup, Cafe Cursor, Announcement, and Thank You frames.",
     color: "from-amber-500/20 to-amber-600/10",
     iconColor: "text-amber-400",
-  },
-  {
-    icon: Images,
-    title: "Create your own style",
-    description: "Organizers can save branded styles for attendees to use again and again.",
-    color: "from-emerald-500/20 to-emerald-600/10",
-    iconColor: "text-emerald-400",
   },
 ];
 
 const EDITOR_FEATURES = [
   { icon: Move, label: "Drag to move" },
-  { icon: ZoomIn, label: "Resize photo" },
-  { icon: RotateCw, label: "Rotate quickly" },
-  { icon: CheckCircle2, label: "One-tap fit" },
+  { icon: CheckCircle2, label: "Scroll or pinch to zoom" },
+  { icon: Wand2, label: "Smart captions" },
+  { icon: Layers, label: "Fixed frame layouts" },
 ];
 
 const STEPS = [
   { num: "01", title: "Upload photo", desc: "Choose your best photo or drop it into the editor" },
-  { num: "02", title: "Try styles", desc: "Tap different event looks until one feels right" },
-  { num: "03", title: "Adjust photo", desc: "Make it bigger, center it, or rotate it" },
-  { num: "04", title: "Save post", desc: "Download the image and post it anywhere" },
+  { num: "02", title: "Choose frame", desc: "Pick from fixed Cursor event layouts" },
+  { num: "03", title: "Save post", desc: "Download the image and post it anywhere" },
 ];
+
+const SHOWCASE_FRAME_IDS = new Set([
+  "preset-hackathon-1",
+  "preset-hackathon-4",
+  "preset-meetup-2",
+  "preset-cafe-3",
+  "preset-announcement-4",
+  "preset-thank-you-2",
+]);
 
 export default function HomePage() {
   const { config: branding } = useBranding();
   const { presetFrames } = useFrames(branding);
+  const showcaseFrames = presetFrames.filter((frame) => SHOWCASE_FRAME_IDS.has(frame.id)).slice(0, 6);
   return (
     <div className="relative overflow-hidden">
       {/* Hero Section */}
@@ -124,11 +124,11 @@ export default function HomePage() {
             variants={fadeUp}
             className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Upload your favorite photo, try ready-made event styles, adjust the crop, and save a polished image.
+            Upload your favorite photo, choose a fixed Cursor event frame, add event details, and save a polished image.
             No sign-up required.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+          <motion.div variants={fadeUp} className="flex justify-center">
             <Link
               href="/editor"
               className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-500 text-white font-semibold text-base hover:from-violet-500 hover:to-blue-400 transition-all shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:-translate-y-0.5"
@@ -136,13 +136,6 @@ export default function HomePage() {
               <Upload className="w-4 h-4" />
               Add your photo
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/frames"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl glass border border-white/10 text-white/80 font-semibold text-base hover:bg-white/[0.07] hover:text-white transition-all hover:-translate-y-0.5"
-            >
-              <Images className="w-4 h-4" />
-              Browse styles
             </Link>
           </motion.div>
 
@@ -176,7 +169,7 @@ export default function HomePage() {
               Try a look before you post
             </h2>
             <p className="text-white/50 text-base max-w-xl mx-auto">
-              Start with a polished style, then switch styles in the editor without uploading again.
+              A small preview of the fixed frame library. The editor keeps the full collection ready.
             </p>
           </motion.div>
 
@@ -185,9 +178,9 @@ export default function HomePage() {
             whileInView="show"
             viewport={{ once: true }}
             variants={stagger}
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {presetFrames.map((frame, i) => (
+            {showcaseFrames.map((frame, i) => (
               <motion.div
                 key={frame.id}
                 variants={fadeUp}
@@ -195,7 +188,7 @@ export default function HomePage() {
                 className="group"
               >
                 <Link href={`/editor?frame=${frame.id}`}>
-                  <div className="glass-card glass-hover rounded-xl overflow-hidden aspect-square">
+                  <div className="glass-card glass-hover rounded-xl overflow-hidden aspect-video">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={frame.imageUrl}
@@ -212,20 +205,6 @@ export default function HomePage() {
             ))}
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mt-8 text-center"
-          >
-            <Link
-              href="/frames"
-              className="inline-flex items-center gap-2 text-sm text-violet-400 hover:text-violet-300 transition-colors font-medium"
-            >
-              View all styles
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </motion.div>
         </div>
       </section>
 
@@ -279,7 +258,7 @@ export default function HomePage() {
           >
             <p className="text-sm font-semibold text-emerald-400 tracking-widest uppercase mb-3">How It Works</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Four steps to your perfect post
+              Three steps to your perfect post
             </h2>
           </motion.div>
 
@@ -288,7 +267,7 @@ export default function HomePage() {
             whileInView="show"
             viewport={{ once: true }}
             variants={stagger}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-6"
           >
             {STEPS.map(({ num, title, desc }, i) => (
               <motion.div key={num} variants={fadeUp} className="relative">
@@ -326,9 +305,9 @@ export default function HomePage() {
                 Ready to make your post?
               </h2>
               <p className="text-white/60 text-base max-w-xl mx-auto mb-8">
-                Upload your photo, try a style, and save a clean social image in minutes.
+                Upload your photo, choose a fixed frame, and save a clean social image in minutes.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex justify-center">
                 <Link
                   href="/editor"
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-500 text-white font-semibold hover:from-violet-500 hover:to-blue-400 transition-all shadow-lg shadow-violet-500/25 hover:-translate-y-0.5"
@@ -336,12 +315,6 @@ export default function HomePage() {
                   <Upload className="w-4 h-4" />
                   Add your photo
                   <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/frames?create=1"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl glass border border-white/10 text-white/80 font-semibold hover:bg-white/[0.07] hover:text-white transition-all hover:-translate-y-0.5"
-                >
-                  Create a style
                 </Link>
               </div>
             </div>

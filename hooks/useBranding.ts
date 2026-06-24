@@ -27,7 +27,8 @@ export function useBranding() {
   const [config, setConfig] = useState<BrandingConfig>(DEFAULT_BRANDING);
 
   useEffect(() => {
-    setConfig(load());
+    const id = window.setTimeout(() => setConfig(load()), 0);
+    return () => window.clearTimeout(id);
   }, []);
 
   const updateConfig = useCallback((updates: Partial<BrandingConfig>) => {

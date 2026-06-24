@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings2, ChevronDown, ChevronUp, RotateCcw, Check } from "lucide-react";
+import { Settings2, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { BrandingConfig } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { FRAME_COLORS } from "@/lib/frames";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -62,10 +61,10 @@ export function BrandingPanel({ config, onChange, onReset }: BrandingPanelProps)
     placeholder: string;
     hint?: string;
   }> = [
-    { id: "eventName", label: "Event name", placeholder: "/Dubai Meetup", hint: "Updates the text on supported styles" },
+    { id: "eventName", label: "Event name", placeholder: "Cursor India", hint: "Updates the text on supported styles" },
     { id: "tagline", label: "Short line", placeholder: "AI coding agent for building ambitious software" },
-    { id: "hashtags", label: "Hashtags", placeholder: "#CursorAI, #DevCommunity", hint: "Comma-separated, shown on supported styles" },
-    { id: "location", label: "Location", placeholder: "Dubai, UAE" },
+    { id: "hashtags", label: "Hashtags", placeholder: "#CursorIndia, #BuildWithCursor", hint: "Comma-separated, shown on supported styles" },
+    { id: "location", label: "Location", placeholder: "India" },
     { id: "date", label: "Date", placeholder: "July 2026" },
     { id: "website", label: "Website", placeholder: "cursor.com" },
   ];
@@ -96,7 +95,7 @@ export function BrandingPanel({ config, onChange, onReset }: BrandingPanelProps)
       >
         <span className="flex items-center gap-1.5">
           <Settings2 className="w-3 h-3 text-violet-400" />
-          Event details (optional)
+          Event details
         </span>
         {open
           ? <ChevronUp className="w-3.5 h-3.5" />
@@ -113,14 +112,6 @@ export function BrandingPanel({ config, onChange, onReset }: BrandingPanelProps)
             className="overflow-hidden"
           >
             <div className="space-y-3 pt-2">
-              {/* Color preview bar */}
-              <div
-                className="w-full h-1.5 rounded-full"
-                style={{
-                  background: `linear-gradient(to right, ${config.accentColor}, ${config.secondaryColor})`,
-                }}
-              />
-
               {textFields.slice(0, 2).map((f) => (
                 <Fragment key={f.id}>
                   {field(f.id, f.label, f.placeholder, f.hint)}
@@ -131,7 +122,7 @@ export function BrandingPanel({ config, onChange, onReset }: BrandingPanelProps)
               <div className="space-y-1.5">
                 <Label className="text-white/60 text-xs font-medium">Status</Label>
                 <div className="flex flex-wrap gap-1">
-                  {["I'm Attending", "I'm Speaking", "Save the Date", "Thank You!", "Just Announced"].map((s) => (
+                  {["Hackathon", "Meetup", "Cafe Cursor", "Announcement", "Thank You!"].map((s) => (
                     <button key={s} type="button"
                       onClick={() => { setDraft(p => ({ ...p, statusText: s })); onChange({ statusText: s }); }}
                       className={cn(
@@ -152,90 +143,16 @@ export function BrandingPanel({ config, onChange, onReset }: BrandingPanelProps)
                 />
               </div>
 
-              {field("hashtags", "Hashtags", "#CursorAI, #DevCommunity", "Comma-separated, shown on supported styles")}
+              {field("hashtags", "Hashtags", "#CursorIndia, #BuildWithCursor", "Comma-separated, shown on supported styles")}
 
               <div className="grid grid-cols-2 gap-2">
-                {field("location", "Location", "Dubai, UAE")}
+                {field("location", "Location", "India")}
                 {field("date", "Date", "July 2026")}
               </div>
 
               {field("website", "Website", "cursor.com")}
 
               <Separator className="bg-white/[0.06]" />
-
-              <div className="space-y-1.5">
-                <Label className="text-white/60 text-xs font-medium">Background style</Label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {(["city", "grid", "code", "minimal"] as const).map((style) => (
-                    <button
-                      key={style}
-                      type="button"
-                      onClick={() => {
-                        setDraft((prev) => ({ ...prev, backgroundStyle: style }));
-                        onChange({ backgroundStyle: style });
-                      }}
-                      className={cn(
-                        "rounded-md border px-1.5 py-1.5 text-[10px] capitalize transition-colors",
-                        config.backgroundStyle === style
-                          ? "border-white/40 bg-white/10 text-white"
-                          : "border-white/10 text-white/35 hover:border-white/25 hover:text-white/70"
-                      )}
-                    >
-                      {style}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Separator className="bg-white/[0.06]" />
-
-              <div className="space-y-1.5">
-                <Label className="text-white/60 text-xs font-medium">Accent Color</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {FRAME_COLORS.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => onChange({ accentColor: color })}
-                      className={cn(
-                        "w-7 h-7 rounded-lg transition-all relative",
-                        config.accentColor === color
-                          ? "ring-2 ring-white/50 ring-offset-1 ring-offset-transparent scale-110"
-                          : "hover:scale-105 opacity-60 hover:opacity-100"
-                      )}
-                      style={{ backgroundColor: color }}
-                    >
-                      {config.accentColor === color && (
-                        <Check className="w-3 h-3 text-white absolute inset-0 m-auto" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-white/60 text-xs font-medium">Secondary Color</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {FRAME_COLORS.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => onChange({ secondaryColor: color })}
-                      className={cn(
-                        "w-7 h-7 rounded-lg transition-all relative",
-                        config.secondaryColor === color
-                          ? "ring-2 ring-white/50 ring-offset-1 ring-offset-transparent scale-110"
-                          : "hover:scale-105 opacity-60 hover:opacity-100"
-                      )}
-                      style={{ backgroundColor: color }}
-                    >
-                      {config.secondaryColor === color && (
-                        <Check className="w-3 h-3 text-white absolute inset-0 m-auto" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               <button
                 type="button"

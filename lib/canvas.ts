@@ -6,7 +6,15 @@ import { EditorTransform, ASPECT_RATIO_DIMENSIONS, AspectRatio, PhotoArea } from
  * drawComposite function accepts transforms in this space and scales
  * internally.
  */
-export const CANVAS_DISPLAY = 560;
+export const CANVAS_DISPLAY = 720;
+
+export function getCanvasDisplaySize(aspectRatio: AspectRatio = "1:1"): { width: number; height: number } {
+  const { width, height } = ASPECT_RATIO_DIMENSIONS[aspectRatio];
+  return {
+    width: CANVAS_DISPLAY,
+    height: CANVAS_DISPLAY * (height / width),
+  };
+}
 
 export interface CanvasLayer {
   photo: HTMLImageElement | null;
@@ -14,16 +22,19 @@ export interface CanvasLayer {
   transform: EditorTransform;
   canvasWidth: number;
   canvasHeight: number;
+  aspectRatio?: AspectRatio;
   photoArea?: PhotoArea | null;
 }
 
 /**
- * Convert a photo-area from 1080-space to CANVAS_DISPLAY (560) space.
+ * Convert a photo-area from source frame space to CANVAS_DISPLAY space.
  * Returns the full canvas area when area is null/undefined.
  */
-export function toCanvasArea(area: PhotoArea | null | undefined): PhotoArea {
-  if (!area) return { x: 0, y: 0, width: CANVAS_DISPLAY, height: CANVAS_DISPLAY };
-  const s = CANVAS_DISPLAY / 1080;
+export function toCanvasArea(area: PhotoArea | null | undefined, aspectRatio: AspectRatio = "1:1"): PhotoArea {
+  const source = ASPECT_RATIO_DIMENSIONS[aspectRatio];
+  const display = getCanvasDisplaySize(aspectRatio);
+  if (!area) return { x: 0, y: 0, width: display.width, height: display.height };
+  const s = display.width / source.width;
   return {
     x: area.x * s,
     y: area.y * s,
@@ -34,31 +45,56 @@ export function toCanvasArea(area: PhotoArea | null | undefined): PhotoArea {
 
 /**
  * Draw photo + frame overlay on a canvas.
- * Transforms are expressed in CANVAS_DISPLAY (560) coordinate space.
+ * Transforms are expressed in CANVAS_DISPLAY coordinate space.
  * The function scales them to the actual canvas buffer resolution.
  */
 export function drawComposite(canvas: HTMLCanvasElement, layer: CanvasLayer): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const { photo, frame, transform, canvasWidth, canvasHeight, photoArea } = layer;
+  const { photo, frame, transform, canvasWidth, canvasHeight, aspectRatio = "1:1", photoArea } = layer;
 
-  // Scale from CANVAS_DISPLAY (transform space) → actual canvas buffer pixels
-  const dpr = canvasWidth / CANVAS_DISPLAY;
+  // Scale from display-size transform space to actual canvas buffer pixels.
+  const display = getCanvasDisplaySize(aspectRatio);
+  const dpr = canvasWidth / display.width;
 
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  // photoArea === null means text-only frames (e.g. Save the Date) — skip photo layer
+  // photoArea === null means text-only frames — skip photo layer.
   if (photo && photoArea !== null) {
-    // Convert photo-area to display space, then apply DPR for buffer pixels
-    const display = toCanvasArea(photoArea);
-    const tx = (display.x + display.width  / 2 + transform.x) * dpr;
-    const ty = (display.y + display.height / 2 + transform.y) * dpr;
+    const area = toCanvasArea(photoArea, aspectRatio);
+    const clipX = area.x * dpr;
+    const clipY = area.y * dpr;
+    const clipW = area.width * dpr;
+    const clipH = area.height * dpr;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(clipX, clipY, clipW, clipH);
+    ctx.clip();
+
+    // Fill the whole fixed photo window with a soft version of the upload.
+    // This keeps portrait photos social-ready without stretching the subject.
+    const coverScale = Math.max(clipW / photo.naturalWidth, clipH / photo.naturalHeight);
+    ctx.save();
+    ctx.filter = "blur(18px)";
+    ctx.globalAlpha = 0.68;
+    ctx.translate(clipX + clipW / 2, clipY + clipH / 2);
+    ctx.scale(coverScale, coverScale);
+    ctx.drawImage(photo, -photo.naturalWidth / 2, -photo.naturalHeight / 2);
+    ctx.restore();
+
+    ctx.fillStyle = "rgba(0,0,0,0.10)";
+    ctx.fillRect(clipX, clipY, clipW, clipH);
+
+    const tx = (area.x + area.width / 2 + transform.x) * dpr;
+    const ty = (area.y + area.height / 2 + transform.y) * dpr;
     ctx.save();
     ctx.translate(tx, ty);
     ctx.rotate((transform.rotation * Math.PI) / 180);
     ctx.scale(transform.scale * dpr, transform.scale * dpr);
     ctx.drawImage(photo, -photo.naturalWidth / 2, -photo.naturalHeight / 2);
+    ctx.restore();
     ctx.restore();
   }
 
@@ -85,6 +121,7 @@ export async function exportCanvas(
     transform,
     canvasWidth: width,
     canvasHeight: height,
+    aspectRatio,
     photoArea,
   });
   return out.toDataURL("image/png", 1.0);

@@ -1,98 +1,57 @@
 "use client";
 
-import { ZoomIn, ZoomOut, RotateCcw, RotateCw, Maximize2, Minimize2, Crosshair, Trash2, Upload } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { Maximize2 } from "lucide-react";
 
 interface EditorControlsProps {
   scale: number;
-  rotation: number;
   hasPhoto: boolean;
   photoDisabled?: boolean;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onRotateCW: () => void;
-  onRotateCCW: () => void;
-  onAutoCenter: () => void;
-  onAutoFit: () => void;
-  onAutoFitContain: () => void;
-  onClearPhoto: () => void;
-  onUploadPhoto: () => void;
   onScaleChange: (scale: number) => void;
+  onFitIntoFrame: () => void;
   minScale: number;
   maxScale: number;
 }
 
-interface ControlButtonProps {
-  onClick: () => void;
-  disabled?: boolean;
-  tooltip: string;
-  label: string;
-  children: React.ReactNode;
-  variant?: "default" | "danger";
-}
-
-function ControlButton({ onClick, disabled, tooltip, label, children, variant = "default" }: ControlButtonProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <button
-            type="button"
-            onClick={onClick}
-            disabled={disabled}
-            className={cn(
-              "h-10 rounded-xl flex items-center justify-center gap-2 transition-all text-sm",
-              "disabled:opacity-30 disabled:cursor-not-allowed",
-              variant === "danger"
-                ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                : "text-white/60 hover:bg-white/[0.08] hover:text-white"
-            )}
-          />
-        }
-      >
-        {children}
-        <span className="text-xs font-medium">{label}</span>
-      </TooltipTrigger>
-      <TooltipContent side="bottom" className="text-xs">
-        {tooltip}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
 export function EditorControls({
   scale,
-  rotation,
   hasPhoto,
   photoDisabled = false,
-  onZoomIn,
-  onZoomOut,
-  onRotateCW,
-  onRotateCCW,
-  onAutoCenter,
-  onAutoFit,
-  onAutoFitContain,
-  onClearPhoto,
-  onUploadPhoto,
   onScaleChange,
+  onFitIntoFrame,
   minScale,
   maxScale,
 }: EditorControlsProps) {
   const scalePercent = Math.round(scale * 100);
-  const controlsDisabled = !hasPhoto || photoDisabled;
+  const active = hasPhoto && !photoDisabled;
+  const progress = Math.max(
+    0,
+    Math.min(100, ((scale - minScale) / (maxScale - minScale)) * 100)
+  );
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
+    <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-medium text-white/60">Photo size</p>
+          <p className="text-[11px] text-white/30">
+            {active ? "Drag to reposition. Scroll or pinch to zoom." : "Upload a photo to adjust it inside the frame."}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onFitIntoFrame}
+          disabled={!active}
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-white/60 transition-colors hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-35"
+        >
+          <Maximize2 className="h-3.5 w-3.5" />
+          Fit into frame
+        </button>
+      </div>
+
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-white/50">Photo size</span>
-          <span className="text-xs font-mono text-white/40">{scalePercent}%</span>
+          <span className="text-[11px] text-white/35">Resize</span>
+          <span className="text-[11px] font-mono text-white/35">{scalePercent}%</span>
         </div>
         <input
           type="range"
@@ -101,53 +60,14 @@ export function EditorControls({
           step={1}
           value={scalePercent}
           onChange={(e) => onScaleChange(Number(e.target.value) / 100)}
-          disabled={controlsDisabled}
+          disabled={!active}
           aria-label="Photo zoom"
-          className="w-full h-1.5 appearance-none rounded-full cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+          className="h-1.5 w-full cursor-pointer appearance-none rounded-full disabled:cursor-not-allowed disabled:opacity-35"
           style={{
-            background: `linear-gradient(to right, rgb(139 92 246) 0%, rgb(139 92 246) ${((scalePercent - minScale * 100) / ((maxScale - minScale) * 100)) * 100}%, rgba(255,255,255,0.1) ${((scalePercent - minScale * 100) / ((maxScale - minScale) * 100)) * 100}%, rgba(255,255,255,0.1) 100%)`,
+            background: `linear-gradient(to right, rgb(139 92 246) 0%, rgb(139 92 246) ${progress}%, rgba(255,255,255,0.10) ${progress}%, rgba(255,255,255,0.10) 100%)`,
           }}
         />
       </div>
-
-      <Separator className="bg-white/[0.06]" />
-
-      <div className="grid grid-cols-2 gap-2">
-        <ControlButton onClick={onZoomIn} disabled={controlsDisabled} tooltip="Make photo bigger" label="Bigger">
-          <ZoomIn className="w-4 h-4" />
-        </ControlButton>
-        <ControlButton onClick={onZoomOut} disabled={controlsDisabled} tooltip="Make photo smaller" label="Smaller">
-          <ZoomOut className="w-4 h-4" />
-        </ControlButton>
-        <ControlButton onClick={onRotateCCW} disabled={controlsDisabled} tooltip="Rotate left" label="Left">
-          <RotateCcw className="w-4 h-4" />
-        </ControlButton>
-        <ControlButton onClick={onRotateCW} disabled={controlsDisabled} tooltip="Rotate right" label="Right">
-          <RotateCw className="w-4 h-4" />
-        </ControlButton>
-        <ControlButton onClick={onAutoCenter} disabled={controlsDisabled} tooltip="Center photo" label="Center">
-          <Crosshair className="w-4 h-4" />
-        </ControlButton>
-        <ControlButton onClick={onAutoFit} disabled={controlsDisabled} tooltip="Fill the style" label="Fill">
-          <Maximize2 className="w-4 h-4" />
-        </ControlButton>
-        <ControlButton onClick={onAutoFitContain} disabled={controlsDisabled} tooltip="Fit whole photo" label="Fit">
-          <Minimize2 className="w-4 h-4" />
-        </ControlButton>
-        <ControlButton onClick={onUploadPhoto} disabled={photoDisabled} tooltip="Choose another photo" label="Change">
-          <Upload className="w-4 h-4" />
-        </ControlButton>
-        <ControlButton onClick={onClearPhoto} disabled={controlsDisabled} tooltip="Remove photo" label="Remove" variant="danger">
-          <Trash2 className="w-4 h-4" />
-        </ControlButton>
-      </div>
-
-      {hasPhoto && rotation !== 0 && !photoDisabled && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-          <RotateCw className="w-3.5 h-3.5 text-white/30" />
-          <span className="text-xs text-white/40">Rotation: {rotation}°</span>
-        </div>
-      )}
     </div>
   );
 }

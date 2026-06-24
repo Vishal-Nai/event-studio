@@ -11,7 +11,6 @@ import { CursorLogo } from "@/components/brand/CursorLogo";
 const NAV_LINKS = [
   { href: "/", label: "Home", icon: null },
   { href: "/editor", label: "Make Post", icon: PenSquare },
-  { href: "/frames", label: "Styles", icon: null },
 ];
 
 export function Header() {
@@ -59,17 +58,6 @@ export function Header() {
               })}
             </nav>
 
-            {/* CTA */}
-            <div className="hidden md:flex items-center gap-3">
-              <Link
-                href="/editor"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-white text-black hover:bg-white/90 transition-all"
-              >
-                <PenSquare className="w-3.5 h-3.5" />
-                Add photo
-              </Link>
-            </div>
-
             {/* Mobile menu toggle */}
             <button
               className="md:hidden p-2 text-white/70 hover:text-white rounded-lg hover:bg-white/[0.05] transition-colors"
@@ -110,14 +98,6 @@ export function Header() {
                 </Link>
               );
             })}
-            <Link
-              href="/editor"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-white text-black mt-2"
-            >
-              <PenSquare className="w-4 h-4" />
-              Add photo
-            </Link>
           </div>
         </motion.div>
       )}
